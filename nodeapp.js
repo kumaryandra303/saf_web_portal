@@ -53,23 +53,29 @@ app.use(helmet.contentSecurityPolicy({
           'https://connect.facebook.net/en_US/sdk.js', 'https://cdn.embedly.com/widgets/platform.js',
           'https://platform.twitter.com','https://www.google-analytics.com',
           'https://fonts.googleapis.com/',
-          'http://localhost:4901',
+          'http://localhost:4901', 'https://settibalijaactionforce.com',
+    'http://settibalijaactionforce.com',
           'https://weatherwidget.io/js/widget.min.js', 'https://www.googletagmanager.com','https://es-staging.cdac.in'
         ],
         styleSrc: ["'self'", "'unsafe-inline'",
           'https://use.fontawesome.com',
           'https://platform.twitter.com',
           'https://www.google-analytics.com',
-          'https://fonts.googleapis.com/',
+          'https://fonts.googleapis.com/', 'https://settibalijaactionforce.com',
+          'http://settibalijaactionforce.com',
           'http://localhost:4901',
           'https://cdn.jsdelivr.net', 'https://www.jqueryscript.net/','https://es-staging.cdac.in'
         ],
-        fontSrc: ["'self'", 'fonts.gstatic.com', 'https://fonts.googleapis.com/',
+        fontSrc: ["'self'", 'fonts.gstatic.com', 'https://fonts.googleapis.com/', 'https://settibalijaactionforce.com',
+            'http://settibalijaactionforce.com',
              'http://localhost:4901', 'https://use.fontawesome.com','https://es-staging.cdac.in'],
-        frameSrc: ["'self'", 'https://accounts.google.com https://platform.twitter.com', 
+        frameSrc: ["'self'", 'https://accounts.google.com https://platform.twitter.com',  'https://settibalijaactionforce.com',
+            'http://settibalijaactionforce.com',
             'https://fonts.googleapis.com/', 'http://localhost:4901', 'https://syndication.twitter.com', 'https://weatherwidget.io','https://es-staging.cdac.in'],
-        connectSrc: ["'self'", "'unsafe-inline'", 'https://www.google-analytics.com', 'https://fonts.googleapis.com/', 'https://translate.googleapis.com', 'https://www.facebook.com', 'https://graph.facebook.com','https://es-staging.cdac.in'],
-        imgSrc: ["'self'", "'unsafe-inline'", 'data:',
+        connectSrc: ["'self'", "'unsafe-inline'", 'https://settibalijaactionforce.com',
+            'http://settibalijaactionforce.com', 'https://www.google-analytics.com', 'https://fonts.googleapis.com/', 'https://translate.googleapis.com', 'https://www.facebook.com', 'https://graph.facebook.com','https://es-staging.cdac.in'],
+        imgSrc: ["'self'", "'unsafe-inline'", 'data:', 'https://settibalijaactionforce.com',
+            'http://settibalijaactionforce.com',
           'https://wetrackon.s3.ap-southeast-1.amazonaws.com/', 'https://fonts.googleapis.com/', 'https://www.facebook.com',
           'https://lh3.googleusercontent.com/',
           'https://dswetrack.s3.ap-southeast-1.amazonaws.com/',
@@ -142,7 +148,9 @@ var allowedDomains = [
     'http://localhost:4200',
     'http://localhost:8100', 
     'http://localhost:4901',
-    'https://settibalijaactionforce.com'
+    'https://settibalijaactionforce.com',
+    'http://settibalijaactionforce.com'
+
 ];
 
 app.use(cors({
