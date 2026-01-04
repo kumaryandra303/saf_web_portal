@@ -20,7 +20,7 @@ expressValidator = require('express-validator');
 util = require('util');
 var _ = require('lodash');
 appRoot = __dirname;
-var isLocal = process.env.NODE_ENV !== 'production';
+var isLocal = true;
 isServerRunLocal = isLocal;
 var settings = require('./utils/settings.utils');
 appSettings = settings.getSettings();
@@ -291,15 +291,28 @@ app.get('*', function (req, res) {
 // Start server
 if (isLocal) {
     /* for local working - START */
-    const PORT = process.env.PORT || 3000;
-
-    const server = app.listen(PORT, '43.204.25.78', () => {
-        console.log(`${appSettings.app.app_name} started on http://43.204.25.78:${PORT}`);
-        if (appSettings.app.banner === true) {
-            banner.startPrint(`http://43.204.25.78:${PORT}`);
-        }
+    var server = app.listen(appSettings.app.app_port, () => {
+        var host = server.address().address;
+        var port = server.address().port;
+        console.log(appSettings.app.app_name + ' Started. listening at http://%s:%s', host, port);
+        if (appSettings.app.banner == true)
+            banner.startPrint("http://" + server.address().address + ":" + server.address().port);
     });
     /* for local working - END */
 
-} 
+} else {
+    /** UAT / PROD  - START */
+    var server = https.createServer({
+        key: fs.readFileSync('/path/to/private.key'),
+        cert: fs.readFileSync('/path/to/certificate.crt'),
+        ca: [fs.readFileSync('/path/to/ca_bundle.crt')]
+    }, app).listen(appSettings.app.app_port, () => {
+        var host = server.address().address;
+        var port = server.address().port;
+        console.log(appSettings.app.app_name + ' Started. listening at https://%s:%s', host, port);
+        if (appSettings.app.banner == true)
+            banner.startPrint("https://" + server.address().address + ":" + server.address().port);
+    });
+    /** UAT / PROD  - END */
+}
 
