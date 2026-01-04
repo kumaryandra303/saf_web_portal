@@ -180,7 +180,8 @@ var allowedDomains = [
     'http://localhost:3000', 
     'http://localhost:4200',
     'http://localhost:8100', 
-    'http://localhost:4901'
+    'http://localhost:4901',
+    'https://settibalijaactionforce.com'
 ];
 
 app.use(cors({
