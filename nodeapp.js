@@ -46,12 +46,33 @@ app.use(helmet.frameguard({ action: 'deny' }));
 app.use(helmet.contentSecurityPolicy({
     directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        fontSrc: ["'self'", 'fonts.gstatic.com'],
-        imgSrc: ["'self'", 'data:'],
-        connectSrc: ["'self'"]
-    }
+        scriptSrc: ["'self'", "'unsafe-inline'",
+          'https://apis.google.com',
+          'https://cdn.jsdelivr.net/gh/gokertanrisever/leaflet-ruler@master/src/leaflet-ruler.js',
+          'https://cdn.syndication.twimg.com/timeline/profile',
+          'https://connect.facebook.net/en_US/sdk.js', 'https://cdn.embedly.com/widgets/platform.js',
+          'https://platform.twitter.com','https://www.google-analytics.com',
+          'https://weatherwidget.io/js/widget.min.js', 'https://www.googletagmanager.com','https://es-staging.cdac.in'
+        ],
+        styleSrc: ["'self'", "'unsafe-inline'",
+          'https://use.fontawesome.com',
+          'https://platform.twitter.com',
+          'https://www.google-analytics.com',
+          'https://cdn.jsdelivr.net', 'https://www.jqueryscript.net/','https://es-staging.cdac.in'
+        ],
+        fontSrc: ["'self'", 'fonts.gstatic.com', 'https://use.fontawesome.com','https://es-staging.cdac.in'],
+        frameSrc: ["'self'", 'https://accounts.google.com https://platform.twitter.com', 'https://syndication.twitter.com', 'https://weatherwidget.io','https://es-staging.cdac.in'],
+        connectSrc: ["'self'", "'unsafe-inline'", 'https://www.google-analytics.com', 'https://translate.googleapis.com', 'https://www.facebook.com', 'https://graph.facebook.com','https://es-staging.cdac.in'],
+        imgSrc: ["'self'", "'unsafe-inline'", 'data:',
+          'https://wetrackon.s3.ap-southeast-1.amazonaws.com/', 'https://www.facebook.com',
+          'https://lh3.googleusercontent.com/',
+          'https://dswetrack.s3.ap-southeast-1.amazonaws.com/',
+          'https://pbs.twimg.com',
+          'https://platform.twitter.com',
+          'https://syndication.twitter.com', 'https://www.facebook.com', 'https://www.gstatic.com',
+          'https://es-staging.cdac.in','https://www.google.com/', 'https://translate.googleapis.com', 'https://translate.google.com/','https://www.freecounterstat.com/','https://counter5.stat.ovh/'],
+      
+        }
 }));
 
 // Body parser middleware
@@ -59,6 +80,54 @@ app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(upload.array());
 app.use(compression());
+
+app.use('', express.static(__dirname + '/client/public/dist/enlink', {
+    setHeaders(res, path) {
+      if (path.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|json)$/)) {
+        setLongTermCache(res);
+      }
+    },
+  }));
+  
+  app.use('/partner/assets', express.static(__dirname + '/client/public/partner/assets', {
+    setHeaders(res, path) {
+      if (path.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|json)$/)) {
+        setLongTermCache(res);
+      }
+    },
+  }));
+  
+  app.use('/home/assets', express.static(__dirname + '/client/public/home/assets', {
+    setHeaders(res, path) {
+      if (path.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|json)$/)) {
+        setLongTermCache(res);
+      }
+    },
+  }));
+  
+  app.use('/public/assets', express.static(__dirname + '/public/assets', {
+    setHeaders(res, path) {
+      if (path.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|json)$/)) {
+        setLongTermCache(res);
+      }
+    },
+  }));
+  
+  app.use('/assets', express.static(__dirname + '/assets', {
+    setHeaders(res, path) {
+      if (path.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|json)$/)) {
+        setLongTermCache(res);
+      }
+    },
+  }));
+  
+  app.use('/client/admin/dist/enlink', express.static(__dirname + '/client/admin/dist/enlink', {
+    setHeaders(res, path) {
+      if (path.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|json)$/)) {
+        setLongTermCache(res);
+      }
+    },
+  }));
 
 // Static files
 app.use('/docs', express.static(__dirname + '/server/docs/'));
