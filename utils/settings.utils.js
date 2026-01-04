@@ -4,7 +4,7 @@ module.exports = {
         return {
             app: {
                 app_name: 'SAF Web Portal',
-                app_port: process.env.PORT || 3000,
+                app_port: process.env.PORT || 4901,
                 banner: true,
                 prod: process.env.NODE_ENV === 'production',
                 log_dir: 'log',
