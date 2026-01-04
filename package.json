@@ -1,0 +1,43 @@
+{
+  "name": "saf_web_portal",
+  "version": "1.0.0",
+  "description": "SAF Web Portal - Node.js application with authentication",
+  "main": "nodeapp.js",
+  "scripts": {
+    "start": "node nodeapp.js",
+    "dev": "nodemon nodeapp.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["node", "mysql", "express", "rest", "api", "authentication"],
+  "author": "SAF Team",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-mysql-session": "^3.0.0",
+    "express-session": "^1.17.3",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.1.0",
+    "js-sha512": "^0.9.0",
+    "jsonwebtoken": "^9.0.2",
+    "localStorage": "^1.0.4",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.4",
+    "multer": "^1.4.5-lts.1",
+    "mysql2": "^3.6.5",
+    "nconf": "^0.12.1",
+    "nocache": "^4.0.0",
+    "nodemailer": "^6.9.7",
+    "request": "^2.88.2",
+    "svg-captcha": "^1.4.0",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
