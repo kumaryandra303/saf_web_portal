@@ -12,17 +12,17 @@ var sha512 = require('js-sha512');
 
 /*****************************************************************************
  * Function      : loginMdl
- * Description   : User login with credentials
- * Arguments     : data, sltKey
+ * Description   : User login with credentials (SHA1 password comparison)
+ * Arguments     : data
  ******************************************************************************/
-exports.loginMdl = function (data, sltKey) {
+exports.loginMdl = function (data) {
     var QRY_TO_EXEC = `SELECT u.usr_id, u.fst_nm, u.lst_nm, u.usr_nm, u.eml_tx,
                        au.clnt_id, au.tnt_id, u.a_in
                        FROM usr_lst_t u
                        LEFT JOIN usr_clnt_tnt_rel_t au ON au.usr_id=u.usr_id
                        WHERE u.usr_nm = ${sqldb.MySQLConPool.escape(data.username)}
                        AND au.a_in=1 
-                       AND MD5(CONCAT(MD5(pwd_tx), ${sqldb.MySQLConPool.escape(sltKey)})) = ${sqldb.MySQLConPool.escape(data.password)}
+                       AND SHA1(pwd_tx) = ${sqldb.MySQLConPool.escape(data.password)}
                        AND u.a_in=1 
                        ORDER BY u.usr_id DESC 
                        LIMIT 0,1;`
@@ -275,13 +275,13 @@ exports.incOtpattemptCtMdl = function (opt_id) {
 
 /*****************************************************************************
  * Function      : usr_rst_pswrdM
- * Description   : Reset user password
+ * Description   : Reset user password (stores plain text, SHA1 comparison in query)
  * Arguments     : newpassword, user
  ******************************************************************************/
 exports.usr_rst_pswrdM = function (newpassword, user) {
-    var sha512_pwd = sha512(newpassword);
+    // Store plain password - SHA1 will be used during login comparison
     var QRY_TO_EXEC = `UPDATE usr_lst_t 
-                       SET pwd_tx = ${sqldb.MySQLConPool.escape(sha512_pwd)}, 
+                       SET pwd_tx = ${sqldb.MySQLConPool.escape(newpassword)}, 
                            u_ts=current_timestamp(), 
                            updte_usr_id=${sqldb.MySQLConPool.escape(user.usr_id)} 
                        WHERE usr_id=${sqldb.MySQLConPool.escape(user.usr_id)};`
@@ -355,4 +355,8 @@ exports.vrfyExstngUserMdl = function (usr_nm) {
     var QRY_TO_EXEC = `SELECT usr_nm, a_in FROM usr_lst_t WHERE usr_nm='${usr_nm}'`;
     return dbutil.execQuery(sqldb.MySQLConPool, QRY_TO_EXEC, cntxtDtls);
 };
+
+
+
+
 

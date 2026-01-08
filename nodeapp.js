@@ -145,6 +145,7 @@ app.use(sessionConnection);
 // CORS configuration
 var allowedDomains = [
     'http://localhost:3000', 
+    'http://localhost:3001',  // SAF Admin Portal
     'http://localhost:4200',
     'http://localhost:8100', 
     'http://localhost:4901',

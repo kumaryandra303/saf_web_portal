@@ -24,7 +24,7 @@ var crypto = require('crypto');
 ***************************************************************************************/
 exports.userLoginCtrl = function (req, res) {
     var fnm = "userLogin";
-    log.message("INFO", cntxtDtls, 100, `In ${fnm}`);
+    // log.message("INFO", cntxtDtls, 100, `In ${fnm}`);
 
     let reqBody;
     var usr_mnu_prfle;
@@ -60,7 +60,7 @@ exports.userLoginCtrl = function (req, res) {
             validateCaptch(reqBody['captcha'], reqBody['captchaID'], (cptch_err, cpthc_res) => {
                 if (!cptch_err) {
                     captchMdl.deactivateValidatedCaptchaMdl(reqBody['captchaID']).then(function (cpth_vld_res) {
-                        authMdl.loginMdl(reqBody, cpthc_res).then(function (results) {
+                        authMdl.loginMdl(reqBody).then(function (results) {
                             if (results.length > 0) {
                                 let cmpnt_ctgry_id = (reqBody.app == 'web') ? 1 : 2;
                                 authMdl.recordLoginHistoryMdl({ 
@@ -225,33 +225,73 @@ var genSaltKey = function (length) {
 
 exports.generateCaptchaCntrl = function (req, res) {
     var fnm = "generateCaptchaCntrl";
-    var captcha = svgCaptcha.create({
-        Width: 100,
-        Height: 50,
-        noise: 2,
-        fontSize: 35,
-        mathMin: 1,
-        mathMax: 9,
-        ignoreChars: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
-        text: `${Math.floor(1000 + Math.random() * 9000)}`
-    });
+    // log.message("INFO", cntxtDtls, 100, `In ${fnm}`);
     
-    var salt_ky = genSaltKey(16);
-    captchMdl.insrtCpatchaTxtMdl(captcha.text, salt_ky).then(function (results) {
-        if (results && results['insertId']) {
-            var img_src = `data:image/svg+xml;base64,` + Buffer.from(captcha.data).toString('base64');
-            df.formatSucessRes(req, res, { 
-                data: img_src, 
-                cptch_id: results['insertId'], 
-                salt_ky: salt_ky 
-            }, cntxtDtls, fnm, {});
-        }
-        else {
-            df.formatErrorRes(res, null, cntxtDtls, fnm, {});
-        }
-    }, function (error) {
-        df.formatErrorRes(res, error, cntxtDtls, fnm, {});
-    });
+    try {
+        var captcha = svgCaptcha.create({
+            Width: 100,
+            Height: 50,
+            noise: 2,
+            fontSize: 35,
+            mathMin: 1,
+            mathMax: 9,
+            ignoreChars: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
+            text: `${Math.floor(1000 + Math.random() * 9000)}`
+        });
+        console.log('1111111111111111111111111111111111111111111111')
+        var salt_ky = genSaltKey(16);
+        console.log('2222222222222222222222222222222222222222222222')
+        captchMdl.insrtCpatchaTxtMdl(captcha.text, salt_ky)
+            .then(function (results) {
+                console.log('3333333333333333333333333333333333333333333333')
+                if (results && results['insertId']) {
+                    console.log(results['insertId'],'4444444444444444444444444444444444444444444444')
+                    var img_src = `data:image/svg+xml;base64,` + Buffer.from(captcha.data).toString('base64');
+                    console.log('Image length:', img_src.length);
+                    
+                    const responseData = {
+                        status: 200,
+                        data: {
+                            data: img_src,
+                            cptch_id: results['insertId'],
+                            salt_ky: salt_ky
+                        },
+                        message: 'Captcha generated successfully'
+                    };
+                    
+                    console.log('Sending response:', JSON.stringify(responseData).substring(0, 200));
+                    res.status(200).json(responseData);
+                    console.log('666666666666666666666 RESPONSE SENT 666666666666666666666');
+                    return;
+                }
+                else {
+                    console.log('5555555555555555555555555555555555555555555555')
+                    log.message("ERROR", cntxtDtls, 100, `Captcha insert failed - no insertId`);
+                    return res.status(500).json({
+                        status: 500,
+                        data: null,
+                        message: 'Failed to generate captcha. Please try again.'
+                    });
+                }
+            })
+            .catch(function (error) {
+                // log.message("ERROR", cntxtDtls, 100, `Captcha error: ${error.message}`);
+                console.error('Captcha generation error:', error);
+                return res.status(500).json({
+                    status: 500,
+                    data: null,
+                    message: 'Database error: ' + error.message
+                });
+            });
+    } catch (error) {
+        // log.message("ERROR", cntxtDtls, 100, `Captcha exception: ${error.message}`);
+        console.error('Captcha exception:', error);
+        return res.status(500).json({
+            status: 500,
+            data: null,
+            message: 'Server error: ' + error.message
+        });
+    }
 }
 
 /**************************************************************************************
@@ -655,4 +695,7 @@ var validateCaptch = (cptch_txt, cptch_id, calbck) => {
         calbck(true, "invalid captcha");
     });
 }
+
+
+
 

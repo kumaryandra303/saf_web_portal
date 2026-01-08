@@ -12,7 +12,7 @@ module.exports = {
 
     formatSucessRes: function(req, res, data, cntxtDtls, fnm, options) {
         return res.status(200).json({
-            status: 'success',
+            status: 200,
             message: options.success_msg || std.message.SUCCESS.message,
             data: data
         });
@@ -30,4 +30,8 @@ module.exports = {
         });
     }
 };
+
+
+
+
 

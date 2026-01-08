@@ -65,3 +65,7 @@ exports.deactivateValidatedCaptchaMdl = function (cptch_id) {
     return dbutil.execQuery(sqldb.MySQLConPool, QRY_TO_EXEC, cntxtDtls);
 };
 
+
+
+
+

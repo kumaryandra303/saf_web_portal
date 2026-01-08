@@ -1,0 +1,18 @@
+{
+  "watch": [
+    "server",
+    "utils",
+    "config",
+    "nodeapp.js"
+  ],
+  "ignore": [
+    "node_modules",
+    "client",
+    "log",
+    "*.log",
+    "*.md"
+  ],
+  "ext": "js,json",
+  "delay": 2000
+}
+

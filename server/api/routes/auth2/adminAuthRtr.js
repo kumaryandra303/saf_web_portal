@@ -21,3 +21,6 @@ adminAuthRtr.get('/roles', authCtrl.getUsrRolesLstCtrl);
 
 module.exports = adminAuthRtr;
 
+
+
+
