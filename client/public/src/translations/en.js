@@ -5,6 +5,7 @@ export const en = {
     programs: 'Programs',
     updates: 'Updates',
     gallery: 'Gallery',
+    members: 'Members',
     contact: 'Contact',
     joinMission: 'Join the Mission'
   },

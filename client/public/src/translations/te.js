@@ -5,6 +5,7 @@ export const te = {
     programs: 'కార్యక్రమాలు',
     updates: 'నవీకరణలు',
     gallery: 'గ్యాలరీ',
+    members: 'సభ్యులు',
     contact: 'సంప్రదించండి',
     joinMission: 'మిషన్‌లో చేరండి'
   },

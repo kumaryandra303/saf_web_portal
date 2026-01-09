@@ -1,15 +1,157 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import { Mail, Phone, MapPin, Send, User, Calendar, Users } from 'lucide-react'
+import safService from '../services/safService'
 
 const Contact = () => {
   const { t } = useLanguage()
   const [activeTab, setActiveTab] = useState('contact')
-  const [formData, setFormData] = useState({})
+  const [formData, setFormData] = useState({
+    full_name: '',
+    father_name: '',
+    dob: '',
+    gender: '',
+    phone: '',
+    email: '',
+    address: '',
+    district_id: '',
+    mandal_id: '',
+    pincode: '',
+    aadhar_no: '',
+    occupation: '',
+    education: ''
+  })
+  
+  const [districts, setDistricts] = useState([])
+  const [mandals, setMandals] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState({ type: '', message: '' })
 
-  const handleSubmit = (e) => {
+  // Fetch districts on component mount
+  useEffect(() => {
+    fetchDistricts()
+  }, [])
+
+  // Fetch mandals when district changes
+  useEffect(() => {
+    if (formData.district_id) {
+      fetchMandals(formData.district_id)
+    } else {
+      setMandals([])
+      setFormData(prev => ({ ...prev, mandal_id: '' }))
+    }
+  }, [formData.district_id])
+
+  const fetchDistricts = async () => {
+    try {
+      const response = await safService.getDistricts()
+      if (response.status === 200 && response.data) {
+        setDistricts(response.data)
+      }
+    } catch (error) {
+      console.error('Error fetching districts:', error)
+      setSubmitStatus({
+        type: 'error',
+        message: 'Failed to load districts. Please refresh the page.'
+      })
+    }
+  }
+
+  const fetchMandals = async (districtId) => {
+    try {
+      const response = await safService.getMandalsByDistrict(districtId)
+      if (response.status === 200 && response.data) {
+        setMandals(response.data)
+      }
+    } catch (error) {
+      console.error('Error fetching mandals:', error)
+      setMandals([])
+    }
+  }
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  const handleContactSubmit = (e) => {
     e.preventDefault()
-    alert('Form submitted! (This is a demo)')
+    alert('Contact form submitted! (This is a demo)')
+  }
+
+  const handleMembershipSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setSubmitStatus({ type: '', message: '' })
+
+    try {
+      const response = await safService.submitMembership(formData)
+      
+      if (response.status === 200) {
+        setSubmitStatus({
+          type: 'success',
+          message: response.data?.message || 'Membership registration successful! Thank you for joining SAF Sabyam.'
+        })
+        
+        // Reset form
+        setFormData({
+          full_name: '',
+          father_name: '',
+          dob: '',
+          gender: '',
+          phone: '',
+          email: '',
+          address: '',
+          district_id: '',
+          mandal_id: '',
+          pincode: '',
+          aadhar_no: '',
+          occupation: '',
+          education: ''
+        })
+        
+        // Scroll to top to show success message
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    } catch (error) {
+      console.error('Membership submission error:', error)
+      
+      const errorMessage = error.err_message || 
+                          error.message || 
+                          'Failed to submit membership. Please try again.'
+      
+      setSubmitStatus({
+        type: 'error',
+        message: errorMessage
+      })
+      
+      // Scroll to top to show error message
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleReset = () => {
+    setFormData({
+      full_name: '',
+      father_name: '',
+      dob: '',
+      gender: '',
+      phone: '',
+      email: '',
+      address: '',
+      district_id: '',
+      mandal_id: '',
+      pincode: '',
+      aadhar_no: '',
+      occupation: '',
+      education: ''
+    })
+    setSubmitStatus({ type: '', message: '' })
   }
 
   return (
@@ -118,7 +260,7 @@ const Contact = () => {
                 <h3 className="text-2xl font-bold text-saf-dark-900 mb-6">
                   {t('contact.send')}
                 </h3>
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleContactSubmit} className="space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       {t('contact.name')}
@@ -193,7 +335,18 @@ const Contact = () => {
                 </p>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Status Messages */}
+              {submitStatus.message && (
+                <div className={`mb-6 p-4 rounded-lg ${
+                  submitStatus.type === 'success' 
+                    ? 'bg-green-100 border border-green-400 text-green-700' 
+                    : 'bg-red-100 border border-red-400 text-red-700'
+                }`}>
+                  <p className="font-medium">{submitStatus.message}</p>
+                </div>
+              )}
+
+              <form onSubmit={handleMembershipSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -201,6 +354,9 @@ const Contact = () => {
                     </label>
                     <input
                       type="text"
+                      name="full_name"
+                      value={formData.full_name}
+                      onChange={handleInputChange}
                       required
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-saf-red-500 focus:border-transparent"
                       placeholder={t('membership.fullName')}
@@ -213,6 +369,9 @@ const Contact = () => {
                     </label>
                     <input
                       type="text"
+                      name="father_name"
+                      value={formData.father_name}
+                      onChange={handleInputChange}
                       required
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-saf-red-500 focus:border-transparent"
                       placeholder={t('membership.fatherName')}
@@ -225,6 +384,9 @@ const Contact = () => {
                     </label>
                     <input
                       type="date"
+                      name="dob"
+                      value={formData.dob}
+                      onChange={handleInputChange}
                       required
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-saf-red-500 focus:border-transparent"
                     />
@@ -235,6 +397,9 @@ const Contact = () => {
                       {t('membership.gender')} *
                     </label>
                     <select
+                      name="gender"
+                      value={formData.gender}
+                      onChange={handleInputChange}
                       required
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-saf-red-500 focus:border-transparent"
                     >
@@ -251,9 +416,14 @@ const Contact = () => {
                     </label>
                     <input
                       type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
                       required
+                      maxLength="10"
+                      pattern="[0-9]{10}"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-saf-red-500 focus:border-transparent"
-                      placeholder={t('membership.phone')}
+                      placeholder="10 digit mobile number"
                     />
                   </div>
 
@@ -263,8 +433,28 @@ const Contact = () => {
                     </label>
                     <input
                       type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-saf-red-500 focus:border-transparent"
                       placeholder={t('membership.email')}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Aadhar Number *
+                    </label>
+                    <input
+                      type="text"
+                      name="aadhar_no"
+                      value={formData.aadhar_no}
+                      onChange={handleInputChange}
+                      required
+                      maxLength="12"
+                      pattern="[0-9]{12}"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-saf-red-500 focus:border-transparent"
+                      placeholder="12 digit Aadhar number"
                     />
                   </div>
                 </div>
@@ -274,6 +464,9 @@ const Contact = () => {
                     {t('membership.address')} *
                   </label>
                   <textarea
+                    name="address"
+                    value={formData.address}
+                    onChange={handleInputChange}
                     rows="3"
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-saf-red-500 focus:border-transparent"
@@ -284,26 +477,45 @@ const Contact = () => {
                 <div className="grid md:grid-cols-3 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t('membership.city')} *
+                      {t('membership.district')} *
                     </label>
-                    <input
-                      type="text"
+                    <select
+                      name="district_id"
+                      value={formData.district_id}
+                      onChange={handleInputChange}
                       required
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-saf-red-500 focus:border-transparent"
-                      placeholder={t('membership.city')}
-                    />
+                    >
+                      <option value="">Select District</option>
+                      {districts.map(district => (
+                        <option key={district.dstrt_id} value={district.dstrt_id}>
+                          {district.dstrt_nm}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t('membership.district')} *
+                      Mandal *
                     </label>
-                    <input
-                      type="text"
+                    <select
+                      name="mandal_id"
+                      value={formData.mandal_id}
+                      onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-saf-red-500 focus:border-transparent"
-                      placeholder={t('membership.district')}
-                    />
+                      disabled={!formData.district_id}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-saf-red-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    >
+                      <option value="">
+                        {formData.district_id ? 'Select Mandal' : 'First select district'}
+                      </option>
+                      {mandals.map(mandal => (
+                        <option key={mandal.mndl_id} value={mandal.mndl_id}>
+                          {mandal.mndl_nm}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div>
@@ -312,9 +524,14 @@ const Contact = () => {
                     </label>
                     <input
                       type="text"
+                      name="pincode"
+                      value={formData.pincode}
+                      onChange={handleInputChange}
                       required
+                      maxLength="6"
+                      pattern="[0-9]{6}"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-saf-red-500 focus:border-transparent"
-                      placeholder={t('membership.pincode')}
+                      placeholder="6 digit pincode"
                     />
                   </div>
                 </div>
@@ -326,6 +543,9 @@ const Contact = () => {
                     </label>
                     <input
                       type="text"
+                      name="occupation"
+                      value={formData.occupation}
+                      onChange={handleInputChange}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-saf-red-500 focus:border-transparent"
                       placeholder={t('membership.occupation')}
                     />
@@ -337,6 +557,9 @@ const Contact = () => {
                     </label>
                     <input
                       type="text"
+                      name="education"
+                      value={formData.education}
+                      onChange={handleInputChange}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-saf-red-500 focus:border-transparent"
                       placeholder={t('membership.education')}
                     />
@@ -344,10 +567,19 @@ const Contact = () => {
                 </div>
 
                 <div className="flex gap-4 pt-6">
-                  <button type="submit" className="btn-primary flex-1">
-                    {t('membership.submit')}
+                  <button 
+                    type="submit" 
+                    disabled={loading}
+                    className="btn-primary flex-1 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  >
+                    {loading ? 'Submitting...' : t('membership.submit')}
                   </button>
-                  <button type="reset" className="btn-secondary flex-1">
+                  <button 
+                    type="button" 
+                    onClick={handleReset}
+                    disabled={loading}
+                    className="btn-secondary flex-1 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  >
                     {t('membership.reset')}
                   </button>
                 </div>

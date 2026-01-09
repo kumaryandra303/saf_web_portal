@@ -17,3 +17,5 @@ SELECT * FROM usr_cptch_lst_t ORDER BY i_ts DESC LIMIT 1;
 -- Clean up test record
 DELETE FROM usr_cptch_lst_t WHERE cptch_txt = 'TEST123';
 
+
+
