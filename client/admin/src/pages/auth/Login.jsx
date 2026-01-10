@@ -207,7 +207,7 @@ const Login = () => {
                   <span className="text-red-700 font-semibold">⨯ Server not responding</span>
                 )}
               </p>
-              <p className="text-xs text-gray-600 mt-1">API: http://localhost:4901</p>
+              <p className="text-xs text-gray-600 mt-1">API: https://settibalijaactionforce.com</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">

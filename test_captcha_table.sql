@@ -19,3 +19,4 @@ DELETE FROM usr_cptch_lst_t WHERE cptch_txt = 'TEST123';
 
 
 
+

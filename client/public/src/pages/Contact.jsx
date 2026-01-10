@@ -26,11 +26,14 @@ const Contact = () => {
   const [mandals, setMandals] = useState([])
   const [loading, setLoading] = useState(false)
   const [submitStatus, setSubmitStatus] = useState({ type: '', message: '' })
+  const [districtsLoaded, setDistrictsLoaded] = useState(false)
 
-  // Fetch districts on component mount
+  // Fetch districts only when membership tab is opened for the first time
   useEffect(() => {
-    fetchDistricts()
-  }, [])
+    if (activeTab === 'membership' && !districtsLoaded) {
+      fetchDistricts()
+    }
+  }, [activeTab, districtsLoaded])
 
   // Fetch mandals when district changes
   useEffect(() => {
@@ -47,6 +50,7 @@ const Contact = () => {
       const response = await safService.getDistricts()
       if (response.status === 200 && response.data) {
         setDistricts(response.data)
+        setDistrictsLoaded(true) // Mark as loaded to prevent duplicate fetches
       }
     } catch (error) {
       console.error('Error fetching districts:', error)
@@ -82,55 +86,144 @@ const Contact = () => {
     alert('Contact form submitted! (This is a demo)')
   }
 
+  // Load Razorpay script
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script')
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+      script.onload = () => resolve(true)
+      script.onerror = () => resolve(false)
+      document.body.appendChild(script)
+    })
+  }
+
   const handleMembershipSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setSubmitStatus({ type: '', message: '' })
 
     try {
-      const response = await safService.submitMembership(formData)
-      
-      if (response.status === 200) {
-        setSubmitStatus({
-          type: 'success',
-          message: response.data?.message || 'Membership registration successful! Thank you for joining SAF Sabyam.'
-        })
-        
-        // Reset form
-        setFormData({
-          full_name: '',
-          father_name: '',
-          dob: '',
-          gender: '',
-          phone: '',
-          email: '',
-          address: '',
-          district_id: '',
-          mandal_id: '',
-          pincode: '',
-          aadhar_no: '',
-          occupation: '',
-          education: ''
-        })
-        
-        // Scroll to top to show success message
-        window.scrollTo({ top: 0, behavior: 'smooth' })
+      // Load Razorpay SDK
+      const scriptLoaded = await loadRazorpayScript()
+      if (!scriptLoaded) {
+        throw new Error('Razorpay SDK failed to load. Please check your internet connection.')
       }
+
+      // Create Razorpay order
+      const orderResponse = await safService.createPaymentOrder()
+      
+      if (orderResponse.status !== 200 || !orderResponse.data) {
+        throw new Error('Failed to create payment order. Please try again.')
+      }
+
+      const { order_id, amount, currency, key_id } = orderResponse.data
+
+      // Razorpay payment options
+      const options = {
+        key: key_id,
+        amount: amount * 100, // Amount in paise
+        currency: currency,
+        name: 'SAF Sabyam Membership',
+        description: 'Settibalija Action Force Membership Fee',
+        image: '/assets/saf_logo.jpeg',
+        order_id: order_id,
+        handler: async function (response) {
+          try {
+            // Payment successful, verify and submit membership
+            const verifyResponse = await safService.verifyPaymentAndSubmit({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              memberData: formData
+            })
+
+            if (verifyResponse.status === 200) {
+              setSubmitStatus({
+                type: 'success',
+                message: verifyResponse.data?.message || 'Payment successful! Welcome to SAF Sabyam.'
+              })
+
+              // Reset form
+              setFormData({
+                full_name: '',
+                father_name: '',
+                dob: '',
+                gender: '',
+                phone: '',
+                email: '',
+                address: '',
+                district_id: '',
+                mandal_id: '',
+                pincode: '',
+                aadhar_no: '',
+                occupation: '',
+                education: ''
+              })
+
+              // Scroll to top to show success message
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+            }
+          } catch (verifyError) {
+            console.error('Payment verification error:', verifyError)
+            setSubmitStatus({
+              type: 'error',
+              message: verifyError.err_message || 'Payment verification failed. Please contact support.'
+            })
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+          } finally {
+            setLoading(false)
+          }
+        },
+        prefill: {
+          name: formData.full_name,
+          email: formData.email || '',
+          contact: formData.phone
+        },
+        notes: {
+          aadhar: formData.aadhar_no,
+          district_id: formData.district_id,
+          mandal_id: formData.mandal_id
+        },
+        theme: {
+          color: '#DC2626' // SAF red color
+        },
+        modal: {
+          ondismiss: function() {
+            setLoading(false)
+            setSubmitStatus({
+              type: 'error',
+              message: 'Payment cancelled. Please try again to complete your membership.'
+            })
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+          }
+        }
+      }
+
+      // Open Razorpay payment modal
+      const razorpay = new window.Razorpay(options)
+      razorpay.on('payment.failed', function (response) {
+        setLoading(false)
+        setSubmitStatus({
+          type: 'error',
+          message: `Payment failed: ${response.error.description}. Please try again.`
+        })
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      })
+      razorpay.open()
+      
     } catch (error) {
       console.error('Membership submission error:', error)
       
-      const errorMessage = error.err_message || 
-                          error.message || 
-                          'Failed to submit membership. Please try again.'
+      const errorMessage = error.message || 
+                          error.err_message || 
+                          'Failed to initiate payment. Please try again.'
       
       setSubmitStatus({
         type: 'error',
         message: errorMessage
       })
       
-      // Scroll to top to show error message
       window.scrollTo({ top: 0, behavior: 'smooth' })
-    } finally {
       setLoading(false)
     }
   }
@@ -333,6 +426,20 @@ const Contact = () => {
                 <p className="text-lg text-gray-600">
                   {t('membership.subtitle')}
                 </p>
+              </div>
+
+              {/* Payment Info Banner */}
+              <div className="mb-6 bg-gradient-to-r from-saf-red-50 to-saf-red-100 border-l-4 border-saf-red-600 p-4 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-saf-red-900">Membership Fee</h3>
+                    <p className="text-sm text-saf-red-700">One-time registration payment</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-3xl font-bold text-saf-red-600">₹20</p>
+                    <p className="text-xs text-saf-red-600">Pay via UPI/Card/Net Banking</p>
+                  </div>
+                </div>
               </div>
 
               {/* Status Messages */}
@@ -570,9 +677,21 @@ const Contact = () => {
                   <button 
                     type="submit" 
                     disabled={loading}
-                    className="btn-primary flex-1 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    className="btn-primary flex-1 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    {loading ? 'Submitting...' : t('membership.submit')}
+                    {loading ? (
+                      <>
+                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        Pay ₹20 & {t('membership.submit')}
+                      </>
+                    )}
                   </button>
                   <button 
                     type="button" 
@@ -582,6 +701,16 @@ const Contact = () => {
                   >
                     {t('membership.reset')}
                   </button>
+                </div>
+                
+                {/* Payment Security Info */}
+                <div className="mt-4 text-center text-sm text-gray-600">
+                  <p className="flex items-center justify-center gap-2">
+                    <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    Secure payment powered by Razorpay
+                  </p>
                 </div>
               </form>
             </div>

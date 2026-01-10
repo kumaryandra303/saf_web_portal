@@ -1,0 +1,49 @@
+═══════════════════════════════════════════════════════════════════════
+  ADD THESE KEYS TO YOUR .env FILE
+═══════════════════════════════════════════════════════════════════════
+
+STEP 1: Open .env file
+------------------------
+Run: notepad .env
+
+STEP 2: Add these lines to .env file
+-------------------------------------
+Copy and paste these lines:
+
+RAZORPAY_KEY_ID=rzp_test_1DP5mmOlF5G5ag
+RAZORPAY_KEY_SECRET=thisissamplesecretkey12345
+
+STEP 3: Save and Close
+-----------------------
+Press Ctrl+S to save, then close Notepad
+
+STEP 4: Restart Server
+-----------------------
+Stop server (Ctrl+C) and restart: npm start
+
+═══════════════════════════════════════════════════════════════════════
+  IMPORTANT NOTES
+═══════════════════════════════════════════════════════════════════════
+
+⚠️  THESE ARE DEMO KEYS FOR TESTING ONLY
+    They will show the payment flow but won't process real payments.
+
+✅  FOR REAL TESTING: Get your own keys from Razorpay
+    1. Sign up free at: https://razorpay.com/
+    2. Go to: https://dashboard.razorpay.com/app/keys
+    3. Click "Generate Test Keys"
+    4. Replace the keys above with your actual keys
+
+═══════════════════════════════════════════════════════════════════════
+  TEST PAYMENT CREDENTIALS
+═══════════════════════════════════════════════════════════════════════
+
+Once configured, test with:
+  UPI:  success@razorpay
+  Card: 4111 1111 1111 1111
+  CVV:  123
+  Expiry: Any future date
+
+═══════════════════════════════════════════════════════════════════════
+
+

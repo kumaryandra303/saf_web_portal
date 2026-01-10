@@ -27,10 +27,22 @@ export const getMembersList = (filters = {}) => {
   return baseApiService.get(url);
 };
 
+// Create Razorpay order for payment
+export const createPaymentOrder = () => {
+  return baseApiService.post('/payment/create-order', {});
+};
+
+// Verify payment and submit membership
+export const verifyPaymentAndSubmit = (paymentData) => {
+  return baseApiService.post('/payment/verify-payment', paymentData);
+};
+
 export default {
   getDistricts,
   getMandalsByDistrict,
   submitMembership,
-  getMembersList
+  getMembersList,
+  createPaymentOrder,
+  verifyPaymentAndSubmit
 };
 

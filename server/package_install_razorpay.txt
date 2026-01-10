@@ -1,0 +1,13 @@
+To install Razorpay SDK in the server, run:
+
+cd server
+npm install razorpay
+
+Then add these environment variables to your .env file:
+
+RAZORPAY_KEY_ID=your_razorpay_key_id_here
+RAZORPAY_KEY_SECRET=your_razorpay_key_secret_here
+
+Get your keys from: https://dashboard.razorpay.com/app/keys
+
+

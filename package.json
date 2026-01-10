@@ -8,7 +8,14 @@
     "dev": "nodemon nodeapp.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["node", "mysql", "express", "rest", "api", "authentication"],
+  "keywords": [
+    "node",
+    "mysql",
+    "express",
+    "rest",
+    "api",
+    "authentication"
+  ],
   "author": "SAF Team",
   "license": "ISC",
   "dependencies": {
@@ -33,6 +40,7 @@
     "nconf": "^0.12.1",
     "nocache": "^4.0.0",
     "nodemailer": "^6.9.7",
+    "razorpay": "^2.9.6",
     "request": "^2.88.2",
     "svg-captcha": "^1.4.0",
     "winston": "^3.11.0"

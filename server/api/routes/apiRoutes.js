@@ -15,6 +15,9 @@ router.use('/admin', require(appRoot + '/server/api/routes/admin/adminRtr'));
 // SAF routes
 router.use('/saf', require(appRoot + '/server/api/routes/saf/safRtr'));
 
+// Payment routes
+router.use('/payment', require(appRoot + '/server/api/routes/payment/paymentRtr'));
+
 // Catch all invalid routes
 router.all('*', (req, res) => {
     res.status(std.message["INVALID_ROUTE"].code).send({ 
