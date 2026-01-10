@@ -84,6 +84,7 @@ exports.userLoginCtrl = function (req, res) {
                                         dsgns_nm = result[0].dsgns_nm;
                                         var clnt_id = result[0].clnt_id;
                                         var tnt_id = result[0].tnt_id;
+                                        console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
                                         authMdl.getUsrAsgndPrflesMdl(clnt_id, tnt_id, usr_rle_id).then((usrAsgndPrfleRes) => {
                                             for (var u = 0; u < usrAsgndPrfleRes.length; u++) {
@@ -101,7 +102,8 @@ exports.userLoginCtrl = function (req, res) {
                                                     usr_hlp_prfle = usrAsgndPrfleRes[u].prfle_id;
                                                 }
                                             }
-                                            
+                                            console.log('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')
+
                                             if (result && result.length) {
                                                 data.clnts = jsonUtils.groupJsonByKey(
                                                     result, 
@@ -130,7 +132,6 @@ exports.userLoginCtrl = function (req, res) {
                                                     dsgns_nm: dsgns_nm 
                                                 }
                                             }
-
                                             var accessToken = jwt.sign({
                                                 usr_id: data.user.usr_id,
                                                 assignedRole: data.user.roles,
@@ -158,54 +159,94 @@ exports.userLoginCtrl = function (req, res) {
                                             let random_number = Math.floor(100000 + Math.random() * 900000);
                                             req.session.qrcode = random_number;
                                             data.qrcode = random_number;
-                                            
+                                            console.log('ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc')
+
                                             authMdl.expr_prvs_sesnsM({ 
                                                 usr_id: req.session.usr_id, 
                                                 app: req.session.app 
                                             }).then((results) => {
+                                                console.log('dddddddddddddddddddddddddddddddddddddddddddddddddddddddd')
                                                 sessionStore.set(req.sessionID, req.session, (err, results) => {
                                                     if (err) {
                                                         df.formatErrorRes(res, err, cntxtDtls, fnm, {});
                                                         return;
                                                     }
                                                     else {
+                                                        console.log('eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
                                                         localStorage.setItem('nodeclnttnt', JSON.stringify(clnt_tnt));
                                                         res.setHeader('x-access-token', accessToken);
-                                                        return df.formatSucessRes(req, res, data, cntxtDtls, fnm, {});
+                                                      return  res.status(200).json({
+                                                            status: 200,
+                                                                data: {
+                                                                    user: data.user,
+                                                                    clnts: data.clnts,
+                                                                    assignedProfiles: data.assignedProfiles,
+                                                                    qrcode: data.qrcode
+                                                                },
+                                                            message: 'Login successful'
+                                                        });
                                                     }
                                                 });
                                             }).catch(error => {
-                                                df.formatErrorRes(res, error, cntxtDtls, fnm, {});
-                                                return
+                                                console.log('fffffffffffffffffffffffffffffffffffffffffffffffffffffffff')
+                                                return res.status(500).json({
+                                                    status: 500,
+                                                    data: null,
+                                                    message: 'Error in login'
+                                                });
+                                            }).catch(error => {
+                                                console.log('gggggggggggggggggggggggggggggggggggggggggggggggggggggggg')
+                                                return res.status(500).json({
+                                                    status: 500,
+                                                    data: null,
+                                                    message: 'Error in login'
+                                                });
                                             })
 
                                         })
                                     } else {
-                                        return df.formatErrorRes(res, null, cntxtDtls, null, { 
-                                            "error_status": std.message.UN_AUTH_ACCESS.code, 
-                                            "err_message": std.message.UN_AUTH_ACCESS.message 
+                                        console.log('hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh')
+                                        return res.status(401).json({
+                                            status: 401,
+                                            data: null,
+                                            message: 'Unauthorized access'
                                         });
                                     }
                                 }, function (error) {
-                                    df.formatErrorRes(res, error, cntxtDtls, fnm, {});
+                                    console.log('iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii')
+                                    return res.status(500).json({
+                                        status: 500,
+                                        data: null,
+                                        message: 'Error in login'
+                                    });
                                 });
 
                             } else {
-                                return df.formatErrorRes(res, null, cntxtDtls, null, { 
-                                    "error_status": std.message.INVALID_CREDENTIALS.code, 
-                                    "err_message": std.message.INVALID_CREDENTIALS.message 
+                                console.log('jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj')
+                                return res.status(401).json({
+                                    status: 401,
+                                    data: null,
+                                    message: 'Invalid credentials'
                                 });
                             }
 
                         })
                         .catch(function (error) {
-                            return df.formatErrorRes(res, error, cntxtDtls, fnm, {});
+                           return res.status(500).json({
+                            status: 500,
+                            data: null,
+                            message: 'Error in login'
+                           });
                         });
                     })
 
                 }
                 else {
-                    return df.formatErrorRes(res, null, cntxtDtls, null, std.varErrorMsg('INVALID_CAPTCHA'));
+                    return res.status(400).json({
+                        status: 400,
+                        data: null,
+                        message: 'Invalid captcha'
+                    });
                 }
             });
         }
