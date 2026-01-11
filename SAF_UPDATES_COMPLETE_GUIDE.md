@@ -87,7 +87,7 @@ I've successfully created a comprehensive SAF Updates management system for both
 ### **5. Static File Serving** ✅
 - **File:** `nodeapp.js`
 - Added `/docs` route to serve uploaded images
-- Images accessible at: `http://localhost:4901/docs/updates/filename`
+- Images accessible at: `https://settibalijaactionforce.com/docs/updates/filename`
 
 ---
 
@@ -289,7 +289,7 @@ CREATE TABLE saf_updates_t (
 ### **Storage Location:**
 - **Server Path:** `{project_root}/public/docs/updates/`
 - **URL Path:** `/docs/updates/{filename}`
-- **Full URL:** `http://localhost:4901/docs/updates/{filename}`
+- **Full URL:** `https://settibalijaactionforce.com/docs/updates/{filename}`
 
 ### **File Naming:**
 - Format: `update-{timestamp}-{random}.{ext}`

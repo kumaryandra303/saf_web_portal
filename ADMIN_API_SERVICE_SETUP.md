@@ -97,7 +97,7 @@ If the server returns 401 (Unauthorized):
 **Before:**
 ```javascript
 import axios from 'axios';
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4901';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://settibalijaactionforce.com';
 
 const response = await axios.get(`${API_BASE_URL}/apiv1/admin/get/districts`);
 ```
@@ -134,19 +134,19 @@ All routes now use `baseApiService` instead of direct axios calls.
 ### **Environment Variables:**
 ```javascript
 // .env file
-VITE_API_BASE_URL=http://localhost:4901
+VITE_API_BASE_URL=https://settibalijaactionforce.com
 ```
 
 ### **API Prefix:**
 ```javascript
 const API_PREFIX = '/apiv1';
-// Full URL: http://localhost:4901/apiv1
+// Full URL: https://settibalijaactionforce.com/apiv1
 ```
 
 ### **Base URL Construction:**
 ```javascript
 baseURL: `${API_BASE_URL}${API_PREFIX}`
-// Example: http://localhost:4901/apiv1
+// Example: https://settibalijaactionforce.com/apiv1
 ```
 
 ---
@@ -235,7 +235,7 @@ const response = await baseApiService.get(route);
 ### **Before (Direct Axios):**
 ```javascript
 import axios from 'axios';
-const API_BASE_URL = 'http://localhost:4901';
+const API_BASE_URL = 'https://settibalijaactionforce.com';
 
 // Manual URL construction
 const response = await axios.get(`${API_BASE_URL}/apiv1/admin/get/districts`);

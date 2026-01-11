@@ -2,7 +2,7 @@
 
 ## Server Configuration
 
-**Base URL:** `http://localhost:4901`  
+**Base URL:** `https://settibalijaactionforce.com`  
 **API Prefix:** `/auth2/admin`  
 **Server File:** `C:\SSSSSS\saf_web_portal\nodeapp.js`
 
@@ -308,7 +308,7 @@
 import axios from 'axios';
 import sha512 from 'js-sha512';
 
-const API_BASE_URL = 'http://localhost:4901';
+const API_BASE_URL = 'https://settibalijaactionforce.com';
 
 // Get Captcha
 const getCaptcha = async () => {

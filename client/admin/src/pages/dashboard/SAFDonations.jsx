@@ -56,6 +56,7 @@ const SAFDonations = () => {
 
   const [submitStatus, setSubmitStatus] = useState({ type: '', message: '' });
   const [isEditMode, setIsEditMode] = useState(false);
+  const [successMessage, setSuccessMessage] = useState({ show: false, message: '' });
 
   const paymentMethods = [
     { value: 'cash', label: 'Cash' },
@@ -357,7 +358,7 @@ const SAFDonations = () => {
     }
 
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4901';
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://settibalijaactionforce.com';
       const API_PREFIX = '/apiv1';
       const token = localStorage.getItem('saf_admin_token');
 
@@ -400,15 +401,24 @@ const SAFDonations = () => {
         }
       });
 
-      if (response && response.data && response.data.status === 'success') {
-        setSubmitStatus({
-          type: 'success',
-          message: isEditMode ? 'Donation updated successfully!' : 'Donation added successfully!'
-        });
+      // Check for HTTP status 200
+      if (response && response.status === 200) {
+        const successMsg = isEditMode ? 'Donation updated successfully!' : 'Donation added successfully!';
+        
+        // Close sidebar immediately
+        setFormSidebarOpen(false);
+        setSubmitStatus({ type: '', message: '' });
+        
+        // Show success message outside sidebar
+        setSuccessMessage({ show: true, message: successMsg });
+        
+        // Reload grid data
+        fetchDonations();
+        
+        // Clear success message after 3 seconds
         setTimeout(() => {
-          setFormSidebarOpen(false);
-          fetchDonations();
-        }, 1500);
+          setSuccessMessage({ show: false, message: '' });
+        }, 3000);
       } else {
         setSubmitStatus({
           type: 'error',
@@ -434,11 +444,14 @@ const SAFDonations = () => {
     try {
       const response = await baseApiService.delete(`/funds/${donationId}`);
       if (response && response.status === 200) {
-        setSubmitStatus({
-          type: 'success',
-          message: 'Donation deleted successfully!'
-        });
+        // Show success message and reload data
+        setSuccessMessage({ show: true, message: 'Donation deleted successfully!' });
         fetchDonations();
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+          setSuccessMessage({ show: false, message: '' });
+        }, 3000);
       } else {
         setSubmitStatus({
           type: 'error',
@@ -501,6 +514,28 @@ const SAFDonations = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+      {/* Success Message Toast */}
+      {successMessage.show && (
+        <div className="fixed top-20 right-6 z-50 animate-slide-in">
+          <div className="bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 min-w-[300px]">
+            <div className="bg-white/20 rounded-full p-1">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold">{successMessage.message}</p>
+            </div>
+            <button
+              onClick={() => setSuccessMessage({ show: false, message: '' })}
+              className="text-white hover:text-gray-200"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header Card */}
       <div className="bg-gradient-to-r from-saf-red-600 to-saf-red-700 rounded-xl shadow-2xl p-6 mb-6">
         <div className="flex justify-between items-center">

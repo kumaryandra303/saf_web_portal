@@ -15,7 +15,7 @@ cd C:\SSSSSS\saf_web_portal
 npm start
 ```
 
-The server will start on **http://localhost:4901**
+The server will start on **https://settibalijaactionforce.com**
 
 ### 2. Start the Admin Portal
 
@@ -181,7 +181,7 @@ Edit `.env` file:
 
 ```env
 # API Configuration
-VITE_API_BASE_URL=http://localhost:4901
+VITE_API_BASE_URL=https://settibalijaactionforce.com
 VITE_API_PREFIX=/auth2/admin
 
 # App Configuration
@@ -210,7 +210,7 @@ app.use(cors({
 ### Test Captcha Generation
 
 ```bash
-curl http://localhost:4901/auth2/admin/login/captcha
+curl https://settibalijaactionforce.com/auth2/admin/login/captcha
 ```
 
 Expected response:

@@ -74,7 +74,7 @@ The Razorpay SDK is automatically loaded via CDN when the form is submitted. No 
 ### 2. Environment Variable (Optional)
 Create `.env` file in `client/public` directory:
 ```env
-VITE_API_BASE_URL=http://localhost:4901
+VITE_API_BASE_URL=https://settibalijaactionforce.com
 ```
 
 ---

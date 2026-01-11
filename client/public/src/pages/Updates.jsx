@@ -52,7 +52,7 @@ const Updates = () => {
           })
 
           // Get API base URL for images
-          const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4901';
+          const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://settibalijaactionforce.com';
           const getImageUrl = (imgPath) => {
             if (!imgPath) return '/assets/saf_update_img1.jpeg';
             if (imgPath.startsWith('http')) return imgPath;

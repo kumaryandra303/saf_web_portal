@@ -24,7 +24,7 @@ INFO: Captcha generated: ID 1
 
 ## Test Captcha API:
 ```bash
-curl http://localhost:4901/auth2/admin/login/captcha
+curl https://settibalijaactionforce.com/auth2/admin/login/captcha
 ```
 
 Should return:

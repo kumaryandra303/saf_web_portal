@@ -195,7 +195,7 @@ mysql -u root -p < schema.sql
 ```bash
 cd C:\SSSSSS\saf_web_portal
 npm start
-# Server: http://localhost:4901
+# Server: https://settibalijaactionforce.com
 ```
 
 ### 3. Install Admin Portal

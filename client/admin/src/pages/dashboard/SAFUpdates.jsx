@@ -68,6 +68,20 @@ const SAFUpdates = () => {
     { value: '12', label: 'December' }
   ];
 
+  // Helper function to get image URL
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+    // If path starts with /docs, use it directly, otherwise prepend /docs/updates/
+    if (imagePath.startsWith('/docs/')) {
+      return `${baseApiService.apiUrl}${imagePath}`;
+    }
+    // If it's just a filename, prepend the full path
+    return `${baseApiService.apiUrl}/docs/updates/${imagePath}`;
+  };
+
   useEffect(() => {
     fetchAvailableYears();
     fetchUpdates();
@@ -80,8 +94,11 @@ const SAFUpdates = () => {
   const fetchAvailableYears = async () => {
     try {
       const response = await baseApiService.get('/updates/years');
-      if (response && response.status === 200) {
-        setAvailableYears(response.data.map(item => item.year));
+      if (response) {
+        const data = response.data || response;
+        if (Array.isArray(data)) {
+          setAvailableYears(data.map(item => item.year || item));
+        }
       }
     } catch (error) {
       console.error('Error fetching years:', error);
@@ -100,8 +117,10 @@ const SAFUpdates = () => {
         '/updates/list';
       
       const response = await baseApiService.get(route);
-      if (response && response.status === 200) {
-        setUpdates(response.data || []);
+      if (response) {
+        // Handle both response.data and direct response
+        const updates = response.data || response;
+        setUpdates(Array.isArray(updates) ? updates : []);
       } else {
         setUpdates([]);
       }
@@ -121,8 +140,33 @@ const SAFUpdates = () => {
   const handleViewUpdate = async (updateId) => {
     try {
       const response = await baseApiService.get(`/updates/${updateId}`);
-      if (response && response.status === 200) {
-        setSelectedUpdate(response.data);
+      console.log('View Update Response:', response);
+      
+      if (response) {
+        // Handle both response.data and direct response
+        const updateData = response.data || response;
+        console.log('Update Data:', updateData);
+        console.log('Image Paths:', {
+          img_1_pth: updateData.img_1_pth,
+          img_2_pth: updateData.img_2_pth,
+          img_3_pth: updateData.img_3_pth
+        });
+        
+        // Process image paths to ensure they're properly formatted
+        const update = {
+          ...updateData,
+          img_1_pth: updateData.img_1_pth ? getImageUrl(updateData.img_1_pth) : null,
+          img_2_pth: updateData.img_2_pth ? getImageUrl(updateData.img_2_pth) : null,
+          img_3_pth: updateData.img_3_pth ? getImageUrl(updateData.img_3_pth) : null
+        };
+        
+        console.log('Processed Image URLs:', {
+          img_1_pth: update.img_1_pth,
+          img_2_pth: update.img_2_pth,
+          img_3_pth: update.img_3_pth
+        });
+        
+        setSelectedUpdate(update);
         setViewSidebarOpen(true);
       }
     } catch (error) {
@@ -137,23 +181,47 @@ const SAFUpdates = () => {
   const handleEditUpdate = async (updateId) => {
     try {
       const response = await baseApiService.get(`/updates/${updateId}`);
-      if (response && response.status === 200) {
-        const update = response.data;
+      console.log('Edit Update Response:', response);
+      
+      if (response) {
+        // Handle both response.data and direct response
+        const update = response.data || response;
+        console.log('Update Data for Edit:', update);
+        console.log('Image Paths for Edit:', {
+          img_1_pth: update.img_1_pth,
+          img_2_pth: update.img_2_pth,
+          img_3_pth: update.img_3_pth
+        });
+        
+        // Process image paths to ensure they're properly formatted
+        const processedUpdate = {
+          ...update,
+          img_1_pth: update.img_1_pth ? getImageUrl(update.img_1_pth) : '',
+          img_2_pth: update.img_2_pth ? getImageUrl(update.img_2_pth) : '',
+          img_3_pth: update.img_3_pth ? getImageUrl(update.img_3_pth) : ''
+        };
+        
+        console.log('Processed Image URLs for Edit:', {
+          img_1_pth: processedUpdate.img_1_pth,
+          img_2_pth: processedUpdate.img_2_pth,
+          img_3_pth: processedUpdate.img_3_pth
+        });
+        
         setFormData({
-          updt_ttl_en: update.updt_ttl_en || '',
-          updt_ttl_te: update.updt_ttl_te || '',
-          updt_cntnt_en: update.updt_cntnt_en || '',
-          updt_cntnt_te: update.updt_cntnt_te || '',
-          updt_typ_cd: update.updt_typ_cd || 'announcement',
-          updt_dt: update.updt_dt || '',
+          updt_ttl_en: processedUpdate.updt_ttl_en || '',
+          updt_ttl_te: processedUpdate.updt_ttl_te || '',
+          updt_cntnt_en: processedUpdate.updt_cntnt_en || '',
+          updt_cntnt_te: processedUpdate.updt_cntnt_te || '',
+          updt_typ_cd: processedUpdate.updt_typ_cd || 'announcement',
+          updt_dt: processedUpdate.updt_dt || '',
           img_1: null,
           img_2: null,
           img_3: null,
-          img_1_pth: update.img_1_pth || '',
-          img_2_pth: update.img_2_pth || '',
-          img_3_pth: update.img_3_pth || ''
+          img_1_pth: processedUpdate.img_1_pth || '',
+          img_2_pth: processedUpdate.img_2_pth || '',
+          img_3_pth: processedUpdate.img_3_pth || ''
         });
-        setSelectedUpdate(update);
+        setSelectedUpdate(processedUpdate);
         setIsEditMode(true);
         setFormSidebarOpen(true);
       }
@@ -269,7 +337,7 @@ const SAFUpdates = () => {
       });
 
       // Use axios directly for FormData
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4901';
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://settibalijaactionforce.com';
       const token = localStorage.getItem('saf_admin_token');
       
       const config = {
@@ -716,11 +784,12 @@ const SAFUpdates = () => {
                     {selectedUpdate.img_1_pth && (
                       <div>
                         <img 
-                          src={selectedUpdate.img_1_pth.startsWith('http') ? selectedUpdate.img_1_pth : `${baseApiService.apiUrl}${selectedUpdate.img_1_pth}`}
+                          src={getImageUrl(selectedUpdate.img_1_pth)}
                           alt="Update Image 1"
                           className="w-full h-auto rounded-lg border border-gray-200"
                           onError={(e) => {
-                            e.target.src = '/assets/saf_update_img1.jpeg';
+                            console.error('Error loading image 1:', selectedUpdate.img_1_pth);
+                            e.target.style.display = 'none';
                           }}
                         />
                       </div>
@@ -728,11 +797,12 @@ const SAFUpdates = () => {
                     {selectedUpdate.img_2_pth && (
                       <div>
                         <img 
-                          src={selectedUpdate.img_2_pth.startsWith('http') ? selectedUpdate.img_2_pth : `${baseApiService.apiUrl}${selectedUpdate.img_2_pth}`}
+                          src={getImageUrl(selectedUpdate.img_2_pth)}
                           alt="Update Image 2"
                           className="w-full h-auto rounded-lg border border-gray-200"
                           onError={(e) => {
-                            e.target.src = '/assets/saf_update_img2.jpeg';
+                            console.error('Error loading image 2:', selectedUpdate.img_2_pth);
+                            e.target.style.display = 'none';
                           }}
                         />
                       </div>
@@ -740,11 +810,12 @@ const SAFUpdates = () => {
                     {selectedUpdate.img_3_pth && (
                       <div>
                         <img 
-                          src={selectedUpdate.img_3_pth.startsWith('http') ? selectedUpdate.img_3_pth : `${baseApiService.apiUrl}${selectedUpdate.img_3_pth}`}
+                          src={getImageUrl(selectedUpdate.img_3_pth)}
                           alt="Update Image 3"
                           className="w-full h-auto rounded-lg border border-gray-200"
                           onError={(e) => {
-                            e.target.src = '/assets/saf_update_img3.jpeg';
+                            console.error('Error loading image 3:', selectedUpdate.img_3_pth);
+                            e.target.style.display = 'none';
                           }}
                         />
                       </div>
@@ -947,13 +1018,25 @@ const SAFUpdates = () => {
                     />
                     {formData.img_1_pth && !formData.img_1 && (
                       <div className="mt-2">
+                        <p className="text-xs text-gray-600 mb-1">Current Image:</p>
                         <img 
-                          src={formData.img_1_pth.startsWith('http') ? formData.img_1_pth : `${baseApiService.apiUrl}${formData.img_1_pth}`}
-                          alt="Current" 
-                          className="w-full h-24 object-cover rounded-lg" 
+                          src={getImageUrl(formData.img_1_pth)}
+                          alt="Current Image 1" 
+                          className="w-full h-32 object-contain rounded-lg border border-gray-200 bg-gray-50" 
                           onError={(e) => {
+                            console.error('Error loading current image 1:', formData.img_1_pth);
                             e.target.style.display = 'none';
                           }}
+                        />
+                      </div>
+                    )}
+                    {formData.img_1 && (
+                      <div className="mt-2">
+                        <p className="text-xs text-gray-600 mb-1">New Image Preview:</p>
+                        <img 
+                          src={URL.createObjectURL(formData.img_1)}
+                          alt="New Image 1 Preview" 
+                          className="w-full h-32 object-contain rounded-lg border border-gray-200 bg-gray-50"
                         />
                       </div>
                     )}
@@ -971,13 +1054,25 @@ const SAFUpdates = () => {
                     />
                     {formData.img_2_pth && !formData.img_2 && (
                       <div className="mt-2">
+                        <p className="text-xs text-gray-600 mb-1">Current Image:</p>
                         <img 
-                          src={formData.img_2_pth.startsWith('http') ? formData.img_2_pth : `${baseApiService.apiUrl}${formData.img_2_pth}`}
-                          alt="Current" 
-                          className="w-full h-24 object-cover rounded-lg"
+                          src={getImageUrl(formData.img_2_pth)}
+                          alt="Current Image 2" 
+                          className="w-full h-32 object-contain rounded-lg border border-gray-200 bg-gray-50"
                           onError={(e) => {
+                            console.error('Error loading current image 2:', formData.img_2_pth);
                             e.target.style.display = 'none';
                           }}
+                        />
+                      </div>
+                    )}
+                    {formData.img_2 && (
+                      <div className="mt-2">
+                        <p className="text-xs text-gray-600 mb-1">New Image Preview:</p>
+                        <img 
+                          src={URL.createObjectURL(formData.img_2)}
+                          alt="New Image 2 Preview" 
+                          className="w-full h-32 object-contain rounded-lg border border-gray-200 bg-gray-50"
                         />
                       </div>
                     )}
@@ -995,13 +1090,25 @@ const SAFUpdates = () => {
                     />
                     {formData.img_3_pth && !formData.img_3 && (
                       <div className="mt-2">
+                        <p className="text-xs text-gray-600 mb-1">Current Image:</p>
                         <img 
-                          src={formData.img_3_pth.startsWith('http') ? formData.img_3_pth : `${baseApiService.apiUrl}${formData.img_3_pth}`}
-                          alt="Current" 
-                          className="w-full h-24 object-cover rounded-lg"
+                          src={getImageUrl(formData.img_3_pth)}
+                          alt="Current Image 3" 
+                          className="w-full h-32 object-contain rounded-lg border border-gray-200 bg-gray-50"
                           onError={(e) => {
+                            console.error('Error loading current image 3:', formData.img_3_pth);
                             e.target.style.display = 'none';
                           }}
+                        />
+                      </div>
+                    )}
+                    {formData.img_3 && (
+                      <div className="mt-2">
+                        <p className="text-xs text-gray-600 mb-1">New Image Preview:</p>
+                        <img 
+                          src={URL.createObjectURL(formData.img_3)}
+                          alt="New Image 3 Preview" 
+                          className="w-full h-32 object-contain rounded-lg border border-gray-200 bg-gray-50"
                         />
                       </div>
                     )}
