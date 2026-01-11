@@ -66,7 +66,7 @@ const HeroSection = () => {
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link
-                to="/contact"
+                to="/contact?tab=membership"
                 className="group inline-flex items-center justify-center px-8 py-4 bg-transparent text-white font-semibold rounded-lg border-2 border-white hover:bg-white hover:text-saf-red-600 transition-all duration-300"
               >
                 {t('home.joinMission')}

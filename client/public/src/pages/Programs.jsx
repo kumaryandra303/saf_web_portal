@@ -121,7 +121,7 @@ const Programs = () => {
           <p className="text-xl text-gray-600 mb-8">
             {t('cta.subtitle')}
           </p>
-          <a href="/contact" className="btn-primary inline-block">
+          <a href="/contact?tab=membership" className="btn-primary inline-block">
             {t('cta.contactUs')}
           </a>
         </div>

@@ -37,12 +37,26 @@ export const verifyPaymentAndSubmit = (paymentData) => {
   return baseApiService.post('/payment/verify-payment', paymentData);
 };
 
+// Get updates list with optional filters
+export const getUpdatesList = (filters = {}) => {
+  const params = new URLSearchParams();
+  if (filters.year) params.append('year', filters.year);
+  if (filters.month) params.append('month', filters.month);
+  
+  const route = params.toString() ? 
+    `/updates/list?${params}` : 
+    '/updates/list';
+  
+  return baseApiService.get(route);
+};
+
 export default {
   getDistricts,
   getMandalsByDistrict,
   submitMembership,
   getMembersList,
   createPaymentOrder,
-  verifyPaymentAndSubmit
+  verifyPaymentAndSubmit,
+  getUpdatesList
 };
 

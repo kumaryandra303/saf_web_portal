@@ -37,3 +37,5 @@ CREATE INDEX idx_i_ts ON saf_pymnt_trnsctn_t(i_ts);
 CREATE INDEX idx_pymnt_mthd ON saf_pymnt_trnsctn_t(pymnt_mthd);
 
 
+
+

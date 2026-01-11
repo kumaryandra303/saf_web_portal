@@ -39,6 +39,68 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Fade in animation for dropdowns */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+/* Navbar specific styles for better alignment */
+nav {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Ensure logo displays properly */
+nav img[alt="SAF Logo"] {
+  object-fit: contain;
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Perfect alignment for header elements */
+nav .flex.items-center {
+  align-items: center;
+}
+
+/* User info text alignment */
+nav .text-right p {
+  line-height: 1.3;
+  margin: 0;
+}
+
+/* Ensure proper spacing in header */
+nav > div > div {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+/* Header height consistency */
+nav {
+  height: 80px;
+  min-height: 80px;
+}
+
+/* User avatar perfect circle */
+nav .rounded-full {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
@@ -171,6 +233,59 @@ html {
   background-image: 
     repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.05) 10px, rgba(255,255,255,.05) 20px),
     repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(255,255,255,.05) 10px, rgba(255,255,255,.05) 20px);
+}
+
+/* Hide DevExpress Evaluation/License Messages - Enhanced Rules */
+.dx-license-message,
+.dx-license-message-container,
+.dx-license-message-wrapper,
+.dx-license-message-content,
+[class*="dx-license"],
+[class*="license-message"],
+[class*="evaluation"],
+[id*="license"],
+[id*="evaluation"],
+[data-dx-license],
+div[class*="evaluation"],
+div[class*="license"],
+div[id*="evaluation"],
+div[id*="license"],
+div[class*="dx-license"],
+div[class*="DevExpress"],
+div:has-text("evaluation"),
+div:has-text("license"),
+div:has-text("DevExpress"),
+div:has-text("register"),
+div:has-text("purchase"),
+div:has-text("Redistribution prohibited"),
+div:has-text("For evaluation purposes only") {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  max-height: 0 !important;
+  max-width: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+  pointer-events: none !important;
+  z-index: -9999 !important;
+}
+
+/* Hide any banner/overlay containing evaluation text */
+body > div[style*="position: fixed"],
+body > div[style*="position: absolute"] {
+  display: none !important;
+}
+
+/* Specifically target orange evaluation banners */
+div[style*="background"][style*="orange"],
+div[style*="background-color"][style*="orange"],
+div[style*="background"][style*="#ff9800"],
+div[style*="background-color"][style*="#ff9800"] {
+  display: none !important;
 }
 
 

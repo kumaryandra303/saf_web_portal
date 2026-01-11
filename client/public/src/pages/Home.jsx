@@ -16,7 +16,7 @@ const Home = () => {
       <AboutPreview />
       <ProgramsPreview />
       <TransparencySection />
-      <GalleryPreview />
+      {/* <GalleryPreview /> */}
       <LeadershipSection />
       <CTASection />
     </div>

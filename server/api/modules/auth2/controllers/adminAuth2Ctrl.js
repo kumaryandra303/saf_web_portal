@@ -173,8 +173,9 @@ exports.userLoginCtrl = function (req, res) {
                                                     }
                                                     else {
                                                         console.log('eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
-                                                        localStorage.setItem('nodeclnttnt', JSON.stringify(clnt_tnt));
-                                                        res.setHeader('x-access-token', accessToken);
+                                                        // req.session.nodeclnttnt = clnt_tnt;
+                                                        // res.setHeader('x-access-token', accessToken);
+                                                        console.log('11111111111111111111111111111111111111111111111111')
                                                       return  res.status(200).json({
                                                             status: 200,
                                                                 data: {

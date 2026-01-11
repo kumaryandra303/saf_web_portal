@@ -106,7 +106,7 @@ const MissionHighlights = () => {
                 <p className="text-sm text-gray-600">{t('mission.joinDifference')}</p>
               </div>
             </div>
-            <a href="/contact" className="btn-primary whitespace-nowrap">
+            <a href="/contact?tab=membership" className="btn-primary whitespace-nowrap">
               {t('mission.getInvolved')}
             </a>
           </div>

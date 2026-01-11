@@ -97,3 +97,45 @@ exports.getMembersListMdl = function (filters) {
     return dbutil.execQuery(sqldb.MySQLConPool, QRY_TO_EXEC, cntxtDtls);
 };
 
+/*****************************************************************************
+ * Function      : insertAdminPaymentMdl
+ * Description   : Insert payment transaction for admin registration
+ * Arguments     : paymentData
+ ******************************************************************************/
+exports.insertAdminPaymentMdl = function (paymentData) {
+    var QRY_TO_EXEC = `INSERT INTO saf_pymnt_trnsctn_t 
+                       (saf_mmbr_id, rzrpy_ordr_id, pymnt_amnt, pymnt_crrncy, 
+                        pymnt_stts, pymnt_mthd, upi_id, pymnt_dt, i_ts) 
+                       VALUES (
+                        ${sqldb.MySQLConPool.escape(paymentData.member_id)},
+                        ${sqldb.MySQLConPool.escape('admin_' + Date.now())},
+                        ${sqldb.MySQLConPool.escape(paymentData.amount)},
+                        'INR',
+                        ${sqldb.MySQLConPool.escape(paymentData.status)},
+                        ${sqldb.MySQLConPool.escape(paymentData.payment_method)},
+                        ${sqldb.MySQLConPool.escape(paymentData.upi_id || null)},
+                        current_timestamp(),
+                        current_timestamp()
+                       );`;
+    
+    console.log(QRY_TO_EXEC);
+    return dbutil.execQuery(sqldb.MySQLConPool, QRY_TO_EXEC, cntxtDtls);
+};
+
+/*****************************************************************************
+ * Function      : linkPaymentToMemberMdl
+ * Description   : Link payment transaction to member record
+ * Arguments     : member_id, payment_transaction_id
+ ******************************************************************************/
+exports.linkPaymentToMemberMdl = function (member_id, payment_transaction_id) {
+    var QRY_TO_EXEC = `UPDATE saf_mmbr_lst_t 
+                       SET pymnt_trnsctn_id=${sqldb.MySQLConPool.escape(payment_transaction_id)},
+                           pymnt_stts='paid',
+                           mmbr_stts='active',
+                           u_ts=current_timestamp()
+                       WHERE saf_mmbr_id=${sqldb.MySQLConPool.escape(member_id)};`;
+    
+    console.log(QRY_TO_EXEC);
+    return dbutil.execQuery(sqldb.MySQLConPool, QRY_TO_EXEC, cntxtDtls);
+};
+

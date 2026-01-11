@@ -18,6 +18,18 @@ router.use('/saf', require(appRoot + '/server/api/routes/saf/safRtr'));
 // Payment routes
 router.use('/payment', require(appRoot + '/server/api/routes/payment/paymentRtr'));
 
+// Updates routes
+router.use('/updates', require(appRoot + '/server/api/routes/updates/updatesRtr'));
+
+// Dashboard routes
+router.use('/dashboard', require(appRoot + '/server/api/routes/dashboard/dashboardRtr'));
+
+// Key People routes
+router.use('/keypeople', require(appRoot + '/server/api/routes/keypeople/keypeopleRtr'));
+
+// Funds routes
+router.use('/funds', require(appRoot + '/server/api/routes/funds/fundsRtr'));
+
 // Catch all invalid routes
 router.all('*', (req, res) => {
     res.status(std.message["INVALID_ROUTE"].code).send({ 

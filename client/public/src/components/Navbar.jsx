@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, Languages } from 'lucide-react'
+import { Menu, X, Languages, ChevronDown } from 'lucide-react'
 import { useLanguage } from '../context/LanguageContext'
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [aboutDropdownOpen, setAboutDropdownOpen] = useState(false)
   const location = useLocation()
   const { language, toggleLanguage, t } = useLanguage()
+  const dropdownRef = useRef(null)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -17,14 +19,27 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setAboutDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   const navLinks = [
     { name: t('nav.home'), path: '/' },
-    { name: t('nav.about'), path: '/about' },
     { name: t('nav.programs'), path: '/programs' },
     { name: t('nav.updates'), path: '/updates' },
-    { name: t('nav.gallery'), path: '/gallery' },
-    { name: t('nav.members'), path: '/members' },
     { name: t('nav.contact'), path: '/contact' },
+  ]
+
+  const aboutMenuItems = [
+    { name: t('nav.about'), path: '/about' },
+    { name: t('nav.members'), path: '/members' },
   ]
 
   return (
@@ -65,6 +80,44 @@ const Navbar = () => {
                 {link.name}
               </Link>
             ))}
+            
+            {/* About SAF Dropdown */}
+            <div 
+              ref={dropdownRef}
+              className="relative"
+              onMouseEnter={() => setAboutDropdownOpen(true)}
+              onMouseLeave={() => setAboutDropdownOpen(false)}
+            >
+              <button
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-1 ${
+                  location.pathname === '/about' || location.pathname === '/members'
+                    ? 'bg-saf-red-600 text-white shadow-md'
+                    : 'text-gray-700 hover:bg-saf-red-50 hover:text-saf-red-600'
+                }`}
+              >
+                {t('nav.about')}
+                <ChevronDown className={`w-4 h-4 transition-transform ${aboutDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {aboutDropdownOpen && (
+                <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50 animate-fade-in">
+                  {aboutMenuItems.map((item) => (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setAboutDropdownOpen(false)}
+                      className={`block px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                        location.pathname === item.path
+                          ? 'bg-saf-red-50 text-saf-red-600 font-semibold'
+                          : 'text-gray-700 hover:bg-saf-red-50 hover:text-saf-red-600'
+                      }`}
+                    >
+                      {item.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Language Toggle & CTA - Desktop */}
@@ -76,7 +129,7 @@ const Navbar = () => {
               <Languages className="w-5 h-5" />
               <span className="font-medium">{language === 'en' ? 'తెలుగు' : 'English'}</span>
             </button>
-            <Link to="/contact" className="btn-primary">
+            <Link to="/contact?tab=membership" className="btn-primary">
               {t('nav.joinMission')}
             </Link>
           </div>
@@ -108,6 +161,43 @@ const Navbar = () => {
                   {link.name}
                 </Link>
               ))}
+              
+              {/* About SAF Mobile Dropdown */}
+              <div>
+                <button
+                  onClick={() => setAboutDropdownOpen(!aboutDropdownOpen)}
+                  className={`w-full px-4 py-3 rounded-lg font-medium transition-all duration-300 flex items-center justify-between ${
+                    location.pathname === '/about' || location.pathname === '/members'
+                      ? 'bg-saf-red-600 text-white shadow-md'
+                      : 'text-gray-700 hover:bg-saf-red-50 hover:text-saf-red-600'
+                  }`}
+                >
+                  <span>{t('nav.about')}</span>
+                  <ChevronDown className={`w-4 h-4 transition-transform ${aboutDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {aboutDropdownOpen && (
+                  <div className="mt-2 ml-4 space-y-1">
+                    {aboutMenuItems.map((item) => (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        onClick={() => {
+                          setIsOpen(false)
+                          setAboutDropdownOpen(false)
+                        }}
+                        className={`block px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                          location.pathname === item.path
+                            ? 'bg-saf-red-50 text-saf-red-600 font-semibold'
+                            : 'text-gray-700 hover:bg-saf-red-50 hover:text-saf-red-600'
+                        }`}
+                      >
+                        {item.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
               <button
                 onClick={() => {
                   toggleLanguage()
@@ -119,7 +209,7 @@ const Navbar = () => {
                 <span>{language === 'en' ? 'తెలుగు' : 'English'}</span>
               </button>
               <Link
-                to="/contact"
+                to="/contact?tab=membership"
                 onClick={() => setIsOpen(false)}
                 className="btn-primary text-center"
               >

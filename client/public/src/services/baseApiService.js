@@ -46,6 +46,7 @@ const post = (route, data) => new Promise((resolve, reject) => {
     });
 });
 
+
 const get = (route) => new Promise((resolve, reject) => {
   axiosInstance
     .get(route)

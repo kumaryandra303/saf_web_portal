@@ -11,21 +11,16 @@ import {
   Mail,
   Database,
   Shield,
-  X
+  X,
+  DollarSign
 } from 'lucide-react';
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const menuItems = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', color: 'text-blue-600' },
-    { name: 'Users', icon: Users, path: '/dashboard/users', color: 'text-green-600' },
-    { name: 'Reports', icon: BarChart3, path: '/dashboard/reports', color: 'text-purple-600' },
-    { name: 'Documents', icon: FileText, path: '/dashboard/documents', color: 'text-yellow-600' },
-    { name: 'Projects', icon: FolderOpen, path: '/dashboard/projects', color: 'text-indigo-600' },
-    { name: 'Calendar', icon: Calendar, path: '/dashboard/calendar', color: 'text-pink-600' },
-    { name: 'Messages', icon: Mail, path: '/dashboard/messages', color: 'text-cyan-600' },
-    { name: 'Database', icon: Database, path: '/dashboard/database', color: 'text-teal-600' },
-    { name: 'Security', icon: Shield, path: '/dashboard/security', color: 'text-red-600' },
-    { name: 'Settings', icon: Settings, path: '/dashboard/settings', color: 'text-gray-600' },
+    { name: 'SAF Members', icon: Users, path: '/dashboard/members', color: 'text-saf-red-600' },
+    { name: 'SAF Updates', icon: FileText, path: '/dashboard/updates', color: 'text-saf-red-600' },
+    { name: 'SAF Donations', icon: DollarSign, path: '/dashboard/donations', color: 'text-saf-red-600' },
   ];
 
   return (
@@ -61,6 +56,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
               <NavLink
                 key={item.name}
                 to={item.path}
+                end={item.path === '/dashboard'} // Use 'end' prop for Dashboard to match exactly
                 onClick={() => setSidebarOpen(false)}
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group ${

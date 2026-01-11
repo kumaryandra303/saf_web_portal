@@ -1,0 +1,257 @@
+/* Dashboard Grid Styling - Matching SAF Members Design */
+.saf-dashboard-grid {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.saf-dashboard-grid .dx-datagrid {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.saf-dashboard-grid .dx-datagrid-table {
+  width: 100% !important;
+  table-layout: auto;
+}
+
+.saf-dashboard-grid .dx-datagrid-rowsview {
+  width: 100% !important;
+  overflow-x: auto;
+}
+
+/* Header Styling - Red background with white text */
+.saf-dashboard-grid .dx-datagrid-headers {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: white;
+  font-weight: 600;
+  border: none;
+}
+
+.saf-dashboard-grid .dx-header-row > td {
+  background: transparent !important;
+  color: white !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  padding: 14px 12px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.saf-dashboard-grid .dx-datagrid-headers .dx-datagrid-table .dx-row > td {
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.saf-dashboard-grid .dx-datagrid-headers .dx-datagrid-text-content {
+  color: white;
+}
+
+/* Row Styling */
+.saf-dashboard-grid .dx-row {
+  transition: all 0.2s ease;
+}
+
+.saf-dashboard-grid .dx-row-alt {
+  background-color: #f9fafb;
+}
+
+.saf-dashboard-grid .dx-data-row:hover {
+  background-color: #fee2e2 !important;
+  cursor: pointer;
+  transform: scale(1.001);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.1);
+}
+
+.saf-dashboard-grid .dx-data-row td {
+  padding: 12px;
+  border-color: #e5e7eb;
+  font-size: 14px;
+  color: #374151;
+}
+
+/* Selection Checkbox */
+.saf-dashboard-grid .dx-select-checkbox {
+  border-color: #dc2626;
+}
+
+.saf-dashboard-grid .dx-checkbox-checked .dx-checkbox-icon {
+  background-color: #dc2626;
+  border-color: #dc2626;
+}
+
+/* Search Panel */
+.saf-dashboard-grid .dx-datagrid-search-panel {
+  margin: 0 0 16px 0;
+}
+
+.saf-dashboard-grid .dx-texteditor.dx-editor-outlined {
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.saf-dashboard-grid .dx-texteditor.dx-state-focused {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+/* Pager Styling */
+.saf-dashboard-grid .dx-pager {
+  padding: 16px;
+  background: #f9fafb;
+  border-top: 2px solid #dc2626;
+  border-radius: 0 0 8px 8px;
+}
+
+.saf-dashboard-grid .dx-pager .dx-page-sizes .dx-page-size {
+  color: #374151;
+  padding: 6px 12px;
+  border-radius: 4px;
+  margin: 0 2px;
+  transition: all 0.2s;
+}
+
+.saf-dashboard-grid .dx-pager .dx-page-sizes .dx-selection {
+  background-color: #dc2626;
+  color: white;
+  font-weight: 600;
+}
+
+.saf-dashboard-grid .dx-pager .dx-pages .dx-page {
+  color: #374151;
+  border-radius: 4px;
+  margin: 0 2px;
+  min-width: 32px;
+  height: 32px;
+  transition: all 0.2s;
+}
+
+.saf-dashboard-grid .dx-pager .dx-pages .dx-selection {
+  background-color: #dc2626;
+  color: white;
+  font-weight: 600;
+}
+
+.saf-dashboard-grid .dx-pager .dx-pages .dx-navigate-button {
+  color: #dc2626;
+  border: 1px solid #dc2626;
+  border-radius: 4px;
+}
+
+.saf-dashboard-grid .dx-pager .dx-pages .dx-navigate-button:hover {
+  background-color: #dc2626;
+  color: white;
+}
+
+/* Filter Row */
+.saf-dashboard-grid .dx-filter-row {
+  background-color: #f9fafb;
+}
+
+.saf-dashboard-grid .dx-filter-row td {
+  border-color: #e5e7eb;
+  padding: 8px;
+}
+
+.saf-dashboard-grid .dx-filter-row .dx-editor-cell {
+  background-color: white;
+}
+
+/* Header Filter */
+.saf-dashboard-grid .dx-header-filter {
+  color: white;
+}
+
+.saf-dashboard-grid .dx-header-filter:hover {
+  color: #fef2f2;
+}
+
+/* Total Footer */
+.saf-dashboard-grid .dx-datagrid-total-footer {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  font-weight: 600;
+  color: #dc2626;
+  border-top: 2px solid #dc2626;
+}
+
+.saf-dashboard-grid .dx-datagrid-total-footer td {
+  padding: 12px;
+  border-color: #dc2626;
+}
+
+/* Empty Data Message */
+.saf-dashboard-grid .dx-datagrid-nodata {
+  color: #9ca3af;
+  font-size: 16px;
+  padding: 40px;
+}
+
+/* Ensure grid container fits properly */
+.saf-dashboard-grid .dx-scrollable-wrapper {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.saf-dashboard-grid .dx-scrollable-container {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.saf-dashboard-grid .dx-scrollable-content {
+  width: 100% !important;
+}
+
+/* Column alignment */
+.saf-dashboard-grid .dx-datagrid-headers .dx-datagrid-table .dx-row > td {
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.saf-dashboard-grid .dx-data-row td {
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* Ensure proper table width and alignment */
+.saf-dashboard-grid .dx-datagrid-headers .dx-datagrid-table,
+.saf-dashboard-grid .dx-datagrid-rowsview .dx-datagrid-table {
+  width: 100% !important;
+  table-layout: auto;
+}
+
+/* Fix column widths to fit container */
+.saf-dashboard-grid .dx-datagrid-headers .dx-datagrid-table .dx-row > td,
+.saf-dashboard-grid .dx-datagrid-rowsview .dx-datagrid-table .dx-row > td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Ensure grid fits within parent */
+.saf-dashboard-grid .dx-datagrid-rowsview {
+  width: 100% !important;
+  overflow-x: auto;
+}
+
+.saf-dashboard-grid .dx-datagrid-headers {
+  width: 100% !important;
+}
+
+/* Hide DevExpress Evaluation Message */
+.dx-license-message,
+.dx-license-message-container,
+.dx-license-message-wrapper,
+[class*="dx-license"],
+[class*="license-message"],
+[id*="license"],
+[data-dx-license] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  left: -9999px !important;
+}
+

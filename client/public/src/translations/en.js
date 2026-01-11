@@ -103,6 +103,7 @@ export const en = {
   transparency: {
     title: 'Committed to Accountability',
     subtitle: 'Stay informed with our latest announcements, financial reports, and community events.',
+    readMore: 'Read More',
     beneficiaries: 'Beneficiaries',
     fundsDeployed: 'Funds Deployed',
     activePrograms: 'Active Programs',

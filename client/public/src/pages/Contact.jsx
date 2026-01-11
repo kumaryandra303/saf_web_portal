@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { Mail, Phone, MapPin, Send, User, Calendar, Users } from 'lucide-react'
 import safService from '../services/safService'
 
 const Contact = () => {
   const { t } = useLanguage()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [activeTab, setActiveTab] = useState('contact')
   const [formData, setFormData] = useState({
     full_name: '',
@@ -27,6 +29,23 @@ const Contact = () => {
   const [loading, setLoading] = useState(false)
   const [submitStatus, setSubmitStatus] = useState({ type: '', message: '' })
   const [districtsLoaded, setDistrictsLoaded] = useState(false)
+
+  // Check URL parameter on mount to open membership tab
+  useEffect(() => {
+    const tabParam = searchParams.get('tab')
+    if (tabParam === 'membership') {
+      setActiveTab('membership')
+      // Remove the query parameter from URL after setting the tab
+      setSearchParams({}, { replace: true })
+      // Scroll to membership form after a short delay
+      setTimeout(() => {
+        const membershipSection = document.getElementById('membership-form')
+        if (membershipSection) {
+          membershipSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }, 100)
+    }
+  }, [searchParams, setSearchParams])
 
   // Fetch districts only when membership tab is opened for the first time
   useEffect(() => {
@@ -415,7 +434,7 @@ const Contact = () => {
 
       {/* Membership Form (SAF Sabyam) */}
       {activeTab === 'membership' && (
-        <section className="py-16 bg-gray-50">
+        <section id="membership-form" className="py-16 bg-gray-50">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="bg-white p-8 md:p-12 rounded-xl shadow-lg">
               <div className="text-center mb-8">

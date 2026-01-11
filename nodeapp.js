@@ -88,9 +88,17 @@ app.use(helmet.contentSecurityPolicy({
 }));
 
 // Body parser middleware
+// Note: bodyParser automatically skips multipart/form-data requests (handled by multer)
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
-app.use(upload.array());
+
+// Skip global multer for updates and funds routes (they have their own multer configuration)
+app.use(function(req, res, next) {
+    if (req.path && (req.path.includes('/updates/') || req.path.includes('/funds/'))) {
+        return next(); // Skip global multer for updates and funds routes
+    }
+    upload.array()(req, res, next);
+});
 app.use(compression());
 
 
@@ -101,6 +109,18 @@ app.use(compression());
 app.use(express.static(__dirname + '/client/public/dist/enlink', {
     setHeaders(res, path) {
         if (path.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|json)$/)) {
+            const date = new Date();
+            date.setFullYear(date.getFullYear() + 1);
+            res.setHeader("Expires", date.toUTCString());
+            res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        }
+    }
+}));
+
+// Serve uploaded documents/images
+app.use('/docs', express.static(__dirname + '/public/docs', {
+    setHeaders(res, path) {
+        if (path.match(/\.(png|jpg|jpeg|gif|svg|webp)$/)) {
             const date = new Date();
             date.setFullYear(date.getFullYear() + 1);
             res.setHeader("Expires", date.toUTCString());
