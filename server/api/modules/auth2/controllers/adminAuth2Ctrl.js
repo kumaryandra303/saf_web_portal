@@ -168,14 +168,14 @@ exports.userLoginCtrl = function (req, res) {
                                                 console.log('dddddddddddddddddddddddddddddddddddddddddddddddddddddddd')
                                                 sessionStore.set(req.sessionID, req.session, (err, results) => {
                                                     if (err) {
-                                                        df.formatErrorRes(res, err, cntxtDtls, fnm, {});
-                                                        return;
+                                                        return res.status(500).json({
+                                                            status: 500,
+                                                            data: null,
+                                                            message: 'Error in login'
+                                                        });
                                                     }
-                                                    else {
-                                                        console.log('eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
-                                                        // req.session.nodeclnttnt = clnt_tnt;
-                                                        // res.setHeader('x-access-token', accessToken);
-                                                        console.log('11111111111111111111111111111111111111111111111111')
+                                                 
+                                                       
                                                       return  res.status(200).json({
                                                             status: 200,
                                                                 data: {
@@ -186,7 +186,7 @@ exports.userLoginCtrl = function (req, res) {
                                                                 },
                                                             message: 'Login successful'
                                                         });
-                                                    }
+                                                    
                                                 });
                                             }).catch(error => {
                                                 console.log('fffffffffffffffffffffffffffffffffffffffffffffffffffffffff')
