@@ -46,10 +46,16 @@ exports.getDistrictsCtrl = function (req, res) {
     adminMdl.getDistrictsListMdl()
         .then(function (results) {
             if (results && results.length > 0) {
-                return df.formatSucessRes(req, res, results, cntxtDtls, fnm, {});
+                return req.status(200).json({
+                    status: 200,
+                    data: results,
+                    message: 'Districts fetched successfully'
+                });
             } else {
-                return df.formatSucessRes(req, res, [], cntxtDtls, fnm, { 
-                    "success_msg": "No districts found" 
+                return req.status(200).json({
+                    status: 200,
+                    data: [],
+                    message: 'No districts found'
                 });
             }
         })
