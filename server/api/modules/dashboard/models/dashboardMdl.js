@@ -19,10 +19,14 @@ exports.getDashboardStatsMdl = function () {
         (SELECT COUNT(*) FROM saf_updates_t WHERE a_in=1) as total_updates,
         (SELECT 
             COALESCE((SELECT SUM(fund_amnt) FROM saf_fund_lst_t WHERE pymnt_stts='completed' AND a_in=1), 0) + 
-            COALESCE((SELECT SUM(pymnt_amnt) FROM saf_pymnt_trnsctn_t WHERE pymnt_stts='success' AND a_in=1), 0)
+            COALESCE((SELECT COALESCE(SUM(a.pymnt_amnt), 0) FROM saf_pymnt_trnsctn_t a
+join saf_mmbr_lst_t b on b.pymnt_trnsctn_id=a.pymnt_trnsctn_id
+ WHERE (a.pymnt_stts='success' or a.pymnt_stts='paid') AND a.a_in=1), 0)
         ) as saf_funds,
-        (SELECT COUNT(*) FROM saf_updates_t WHERE a_in=1 AND updt_typ_cd='program') as total_programs,
-        (SELECT COALESCE(SUM(pymnt_amnt), 0) FROM saf_pymnt_trnsctn_t WHERE pymnt_stts='success' AND a_in=1) as sabyatwam_amount;`;
+        4 as total_programs,
+        (SELECT COALESCE(SUM(a.pymnt_amnt), 0) FROM saf_pymnt_trnsctn_t a
+join saf_mmbr_lst_t b on b.pymnt_trnsctn_id=a.pymnt_trnsctn_id
+ WHERE (a.pymnt_stts='success' or a.pymnt_stts='paid') AND a.a_in=1) as sabyatwam_amount;`;
     
     console.log(QRY_TO_EXEC);
     return dbutil.execQuery(sqldb.MySQLConPool, QRY_TO_EXEC, cntxtDtls);
@@ -64,24 +68,45 @@ exports.getTopMembersMdl = function () {
  ******************************************************************************/
 exports.getDistrictWiseStatsMdl = function () {
     var QRY_TO_EXEC = `SELECT 
-        d.dstrt_id,
-        d.dstrt_nm,
-        COUNT(DISTINCT s.saf_mmbr_id) as total_members,
-        COUNT(DISTINCT CASE WHEN s.pymnt_stts='paid' THEN s.saf_mmbr_id END) as paid_members,
-        COUNT(DISTINCT CASE WHEN p.pymnt_stts='success' AND p.a_in=1 THEN s.saf_mmbr_id END) as donors_count,
-        COALESCE(SUM(CASE WHEN p.pymnt_stts='success' AND p.a_in=1 THEN p.pymnt_amnt ELSE 0 END), 0) as total_donations,
-        COALESCE(
-            SUM(CASE WHEN p.pymnt_stts='success' AND p.a_in=1 THEN p.pymnt_amnt ELSE 0 END) / 
-            NULLIF(COUNT(DISTINCT CASE WHEN p.pymnt_stts='success' AND p.a_in=1 THEN s.saf_mmbr_id END), 0), 
-            0
-        ) as avg_donation
-        FROM dstrt_lst_t d
-        LEFT JOIN saf_mmbr_lst_t s ON d.dstrt_id = s.dstrt_id AND s.a_in=1
-        LEFT JOIN saf_pymnt_trnsctn_t p ON s.pymnt_trnsctn_id = p.pymnt_trnsctn_id AND p.a_in=1
-        WHERE d.a_in=1
-        GROUP BY d.dstrt_id, d.dstrt_nm
-        HAVING total_members > 0
-        ORDER BY total_donations DESC, total_members DESC;`;
+    d.dstrt_id,
+    d.dstrt_nm,
+
+    COUNT(DISTINCT s.saf_mmbr_id) AS total_members,
+
+    COALESCE(COUNT(DISTINCT s.saf_mmbr_id)*20, 0) AS member_paid_amnt,
+
+    COALESCE(MAX(fstats.donors_count), 0) AS donors_count,
+    COALESCE(MAX(fstats.total_donations), 0) AS total_donations,
+    COALESCE(MAX(fstats.avg_donation), 0) AS avg_donation
+
+FROM dstrt_lst_t d
+
+LEFT JOIN saf_mmbr_lst_t s 
+    ON d.dstrt_id = s.dstrt_id AND s.a_in = 1
+
+LEFT JOIN saf_pymnt_trnsctn_t pt 
+    ON s.pymnt_trnsctn_id = pt.pymnt_trnsctn_id 
+    AND pt.a_in = 1 
+    AND pt.pymnt_stts IN ('success','paid')
+
+LEFT JOIN (
+    SELECT 
+        dstrt_id,
+        COUNT(DISTINCT dntr_nm) AS donors_count,
+        SUM(fund_amnt) AS total_donations,
+        AVG(fund_amnt) AS avg_donation
+    FROM saf_fund_lst_t
+    WHERE pymnt_stts = 'completed'
+      AND a_in = 1
+    GROUP BY dstrt_id
+) fstats 
+    ON d.dstrt_id = fstats.dstrt_id
+
+WHERE d.a_in = 1
+GROUP BY d.dstrt_id, d.dstrt_nm
+HAVING total_members > 0
+ORDER BY total_donations DESC, total_members DESC
+LIMIT 0, 1000;;`;
     
     console.log(QRY_TO_EXEC);
     return dbutil.execQuery(sqldb.MySQLConPool, QRY_TO_EXEC, cntxtDtls);

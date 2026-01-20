@@ -42,8 +42,8 @@ const ProgramsPreview = () => {
   ]
 
   return (
-    <section className="py-20 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-12 sm:py-16 lg:py-20 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="text-center mb-16">
           <div className="inline-flex items-center space-x-2 bg-saf-red-100 px-4 py-2 rounded-full mb-4">
             <Briefcase className="w-5 h-5 text-saf-red-600" />
@@ -55,7 +55,7 @@ const ProgramsPreview = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
           {programs.map((program, index) => (
             <div key={index} className="card group hover:shadow-2xl">
               <div className={`bg-gradient-to-br ${program.color} p-8 relative overflow-hidden`}>

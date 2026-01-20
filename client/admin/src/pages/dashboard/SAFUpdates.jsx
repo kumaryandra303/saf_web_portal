@@ -10,11 +10,10 @@ import DataGrid, {
   Selection,
   ColumnChooser
 } from 'devextreme-react/data-grid';
-import { FileText, Plus, X, Filter, RefreshCw, Eye, Edit, Trash2, Calendar } from 'lucide-react';
+import { FileText, Plus, X, Filter, RefreshCw, Eye, Edit, Trash2, Calendar, XCircle } from 'lucide-react';
 import 'devextreme/dist/css/dx.light.css';
 import './SAFUpdates.css';
 import baseApiService from '../../services/baseApiService';
-import axios from 'axios';
 
 const SAFUpdates = () => {
   const [updates, setUpdates] = useState([]);
@@ -70,14 +69,20 @@ const SAFUpdates = () => {
 
   // Helper function to get image URL
   const getImageUrl = (imagePath) => {
-    if (!imagePath) return null;
+    if (!imagePath || typeof imagePath !== 'string' || imagePath.trim() === '') {
+      return null;
+    }
+    
+    // If already a full URL, return as-is
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
       return imagePath;
     }
-    // If path starts with /docs, use it directly, otherwise prepend /docs/updates/
+    
+    // If path starts with /docs, use it directly
     if (imagePath.startsWith('/docs/')) {
       return `${baseApiService.apiUrl}${imagePath}`;
     }
+    
     // If it's just a filename, prepend the full path
     return `${baseApiService.apiUrl}/docs/updates/${imagePath}`;
   };
@@ -140,34 +145,59 @@ const SAFUpdates = () => {
   const handleViewUpdate = async (updateId) => {
     try {
       const response = await baseApiService.get(`/updates/${updateId}`);
-      console.log('View Update Response:', response);
+      console.log('=== VIEW UPDATE DEBUG ===');
+      console.log('Full Response:', JSON.stringify(response, null, 2));
+      console.log('Response Type:', typeof response);
+      console.log('Response Keys:', response ? Object.keys(response) : 'null');
       
-      if (response) {
-        // Handle both response.data and direct response
-        const updateData = response.data || response;
-        console.log('Update Data:', updateData);
-        console.log('Image Paths:', {
+      let updateData = null;
+      
+      // Handle different response structures
+      if (response && response.status === 200 && response.data) {
+        updateData = response.data;
+        console.log('Using response.data (status 200)');
+      } else if (response && response.data) {
+        updateData = response.data;
+        console.log('Using response.data (no status check)');
+      } else if (response && !response.status) {
+        // Direct data response
+        updateData = response;
+        console.log('Using direct response');
+      }
+      
+      if (updateData) {
+        console.log('Update Data Extracted:', updateData);
+        console.log('Raw Image Paths:', {
           img_1_pth: updateData.img_1_pth,
           img_2_pth: updateData.img_2_pth,
-          img_3_pth: updateData.img_3_pth
+          img_3_pth: updateData.img_3_pth,
+          'img_1_pth type': typeof updateData.img_1_pth,
+          'img_1_pth truthy': !!updateData.img_1_pth
         });
         
-        // Process image paths to ensure they're properly formatted
+        // Store raw image paths from API (will be processed in render)
         const update = {
           ...updateData,
-          img_1_pth: updateData.img_1_pth ? getImageUrl(updateData.img_1_pth) : null,
-          img_2_pth: updateData.img_2_pth ? getImageUrl(updateData.img_2_pth) : null,
-          img_3_pth: updateData.img_3_pth ? getImageUrl(updateData.img_3_pth) : null
+          img_1_pth: (updateData.img_1_pth && typeof updateData.img_1_pth === 'string') ? updateData.img_1_pth.trim() : null,
+          img_2_pth: (updateData.img_2_pth && typeof updateData.img_2_pth === 'string') ? updateData.img_2_pth.trim() : null,
+          img_3_pth: (updateData.img_3_pth && typeof updateData.img_3_pth === 'string') ? updateData.img_3_pth.trim() : null
         };
         
-        console.log('Processed Image URLs:', {
+        console.log('Final Update Object:', {
+          saf_updt_id: update.saf_updt_id,
           img_1_pth: update.img_1_pth,
           img_2_pth: update.img_2_pth,
-          img_3_pth: update.img_3_pth
+          img_3_pth: update.img_3_pth,
+          'Image 1 URL': update.img_1_pth ? getImageUrl(update.img_1_pth) : 'null',
+          'Image 2 URL': update.img_2_pth ? getImageUrl(update.img_2_pth) : 'null',
+          'Image 3 URL': update.img_3_pth ? getImageUrl(update.img_3_pth) : 'null',
+          'baseApiService.apiUrl': baseApiService.apiUrl
         });
         
         setSelectedUpdate(update);
         setViewSidebarOpen(true);
+      } else {
+        console.error('No update data found in response');
       }
     } catch (error) {
       console.error('Error fetching update details:', error);
@@ -181,49 +211,59 @@ const SAFUpdates = () => {
   const handleEditUpdate = async (updateId) => {
     try {
       const response = await baseApiService.get(`/updates/${updateId}`);
-      console.log('Edit Update Response:', response);
+      console.log('=== EDIT UPDATE DEBUG ===');
+      console.log('Full Response:', JSON.stringify(response, null, 2));
       
-      if (response) {
-        // Handle both response.data and direct response
-        const update = response.data || response;
-        console.log('Update Data for Edit:', update);
+      let updateData = null;
+      
+      // Handle different response structures
+      if (response && response.status === 200 && response.data) {
+        updateData = response.data;
+        console.log('Using response.data (status 200)');
+      } else if (response && response.data) {
+        updateData = response.data;
+        console.log('Using response.data (no status check)');
+      } else if (response && !response.status) {
+        // Direct data response
+        updateData = response;
+        console.log('Using direct response');
+      }
+      
+      if (updateData) {
+        console.log('Update Data for Edit:', updateData);
         console.log('Image Paths for Edit:', {
-          img_1_pth: update.img_1_pth,
-          img_2_pth: update.img_2_pth,
-          img_3_pth: update.img_3_pth
-        });
-        
-        // Process image paths to ensure they're properly formatted
-        const processedUpdate = {
-          ...update,
-          img_1_pth: update.img_1_pth ? getImageUrl(update.img_1_pth) : '',
-          img_2_pth: update.img_2_pth ? getImageUrl(update.img_2_pth) : '',
-          img_3_pth: update.img_3_pth ? getImageUrl(update.img_3_pth) : ''
-        };
-        
-        console.log('Processed Image URLs for Edit:', {
-          img_1_pth: processedUpdate.img_1_pth,
-          img_2_pth: processedUpdate.img_2_pth,
-          img_3_pth: processedUpdate.img_3_pth
+          img_1_pth: updateData.img_1_pth,
+          img_2_pth: updateData.img_2_pth,
+          img_3_pth: updateData.img_3_pth,
+          'img_1_pth type': typeof updateData.img_1_pth
         });
         
         setFormData({
-          updt_ttl_en: processedUpdate.updt_ttl_en || '',
-          updt_ttl_te: processedUpdate.updt_ttl_te || '',
-          updt_cntnt_en: processedUpdate.updt_cntnt_en || '',
-          updt_cntnt_te: processedUpdate.updt_cntnt_te || '',
-          updt_typ_cd: processedUpdate.updt_typ_cd || 'announcement',
-          updt_dt: processedUpdate.updt_dt || '',
+          updt_ttl_en: updateData.updt_ttl_en || '',
+          updt_ttl_te: updateData.updt_ttl_te || '',
+          updt_cntnt_en: updateData.updt_cntnt_en || '',
+          updt_cntnt_te: updateData.updt_cntnt_te || '',
+          updt_typ_cd: updateData.updt_typ_cd || 'announcement',
+          updt_dt: updateData.updt_dt || '',
           img_1: null,
           img_2: null,
           img_3: null,
-          img_1_pth: processedUpdate.img_1_pth || '',
-          img_2_pth: processedUpdate.img_2_pth || '',
-          img_3_pth: processedUpdate.img_3_pth || ''
+          img_1_pth: (updateData.img_1_pth && typeof updateData.img_1_pth === 'string') ? updateData.img_1_pth.trim() : '',
+          img_2_pth: (updateData.img_2_pth && typeof updateData.img_2_pth === 'string') ? updateData.img_2_pth.trim() : '',
+          img_3_pth: (updateData.img_3_pth && typeof updateData.img_3_pth === 'string') ? updateData.img_3_pth.trim() : ''
         });
-        setSelectedUpdate(processedUpdate);
+        
+        console.log('Form Data Set:', {
+          img_1_pth: (updateData.img_1_pth && typeof updateData.img_1_pth === 'string') ? updateData.img_1_pth.trim() : '',
+          img_2_pth: (updateData.img_2_pth && typeof updateData.img_2_pth === 'string') ? updateData.img_2_pth.trim() : '',
+          img_3_pth: (updateData.img_3_pth && typeof updateData.img_3_pth === 'string') ? updateData.img_3_pth.trim() : '',
+          'Image 1 URL': updateData.img_1_pth ? getImageUrl(updateData.img_1_pth) : 'null'
+        });
+        
         setIsEditMode(true);
         setFormSidebarOpen(true);
+      } else {
+        console.error('No update data found in response for edit');
       }
     } catch (error) {
       console.error('Error fetching update for edit:', error);
@@ -265,8 +305,22 @@ const SAFUpdates = () => {
     if (file) {
       setFormData(prev => ({
         ...prev,
-        [`img_${imageNumber}`]: file
+        [`img_${imageNumber}`]: file,
+        [`img_${imageNumber}_pth`]: '' // Clear existing path when new file is selected
       }));
+    }
+  };
+
+  const handleDeleteImage = (imageNumber) => {
+    setFormData(prev => ({
+      ...prev,
+      [`img_${imageNumber}`]: null,
+      [`img_${imageNumber}_pth`]: ''
+    }));
+    // Reset the file input
+    const fileInput = document.querySelector(`input[type="file"][data-image="${imageNumber}"]`);
+    if (fileInput) {
+      fileInput.value = '';
     }
   };
 
@@ -336,40 +390,29 @@ const SAFUpdates = () => {
         has_img_3: !!formData.img_3
       });
 
-      // Use axios directly for FormData
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://settibalijaactionforce.com';
-      const token = localStorage.getItem('saf_admin_token');
-      
-      const config = {
-        headers: {
-          // Don't set Content-Type - let axios set it automatically for FormData
-          ...(token && { 'x-access-token': token })
-        }
-      };
-
+      // Use baseApiService for FormData (it handles FormData automatically)
       let response;
-      const url = isEditMode 
-        ? `${API_BASE_URL}/apiv1/updates/${selectedUpdate.saf_updt_id}`
-        : `${API_BASE_URL}/apiv1/updates/create`;
+      const route = isEditMode 
+        ? `/updates/${selectedUpdate.saf_updt_id}`
+        : '/updates/create';
       
-      console.log('API URL:', url);
+      console.log('API Route:', route);
       console.log('Method:', isEditMode ? 'PUT' : 'POST');
 
       if (isEditMode && selectedUpdate) {
         // Update existing
-        response = await axios.put(url, formDataToSend, config);
+        response = await baseApiService.put(route, formDataToSend);
       } else {
         // Create new
-        response = await axios.post(url, formDataToSend, config);
+        response = await baseApiService.post(route, formDataToSend);
       }
       
       console.log('=== RESPONSE ===');
       console.log('Full response:', response);
-      console.log('Response data:', response.data);
       
-      const responseData = response.data || response;
+      const responseData = response;
 
-      if (responseData && (responseData.status === 200 || response.status === 200)) {
+      if (responseData && (responseData.status === 200 || responseData.data?.status === 200)) {
         setSubmitStatus({
           type: 'success',
           message: isEditMode ? 'Update modified successfully!' : 'Update created successfully!'
@@ -775,47 +818,76 @@ const SAFUpdates = () => {
                 </div>
               </div>
 
-              {(selectedUpdate.img_1_pth || selectedUpdate.img_2_pth || selectedUpdate.img_3_pth) && (
+              {selectedUpdate && ((selectedUpdate.img_1_pth && selectedUpdate.img_1_pth.trim() !== '') || 
+                (selectedUpdate.img_2_pth && selectedUpdate.img_2_pth.trim() !== '') || 
+                (selectedUpdate.img_3_pth && selectedUpdate.img_3_pth.trim() !== '')) && (
                 <>
                   <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl border-l-4 border-saf-red-600">
                     <h3 className="font-bold text-gray-900 mb-1">Images</h3>
                   </div>
-                  <div className="grid grid-cols-1 gap-4">
-                    {selectedUpdate.img_1_pth && (
-                      <div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {selectedUpdate.img_1_pth && selectedUpdate.img_1_pth.trim() !== '' && (
+                      <div className="relative bg-gray-100 rounded-lg border-2 border-gray-300 overflow-hidden aspect-square flex items-center justify-center">
                         <img 
                           src={getImageUrl(selectedUpdate.img_1_pth)}
                           alt="Update Image 1"
-                          className="w-full h-auto rounded-lg border border-gray-200"
+                          className="w-full h-full object-cover"
+                          crossOrigin="anonymous"
                           onError={(e) => {
-                            console.error('Error loading image 1:', selectedUpdate.img_1_pth);
+                            console.error('❌ Error loading image 1:', {
+                              path: selectedUpdate.img_1_pth,
+                              url: getImageUrl(selectedUpdate.img_1_pth),
+                              baseUrl: baseApiService.apiUrl
+                            });
                             e.target.style.display = 'none';
+                            e.target.parentElement.innerHTML = '<div class="flex items-center justify-center h-full text-gray-400">Image not found</div>';
+                          }}
+                          onLoad={() => {
+                            console.log('✅ Successfully loaded image 1:', getImageUrl(selectedUpdate.img_1_pth));
                           }}
                         />
                       </div>
                     )}
-                    {selectedUpdate.img_2_pth && (
-                      <div>
+                    {selectedUpdate.img_2_pth && selectedUpdate.img_2_pth.trim() !== '' && (
+                      <div className="relative bg-gray-100 rounded-lg border-2 border-gray-300 overflow-hidden aspect-square flex items-center justify-center">
                         <img 
                           src={getImageUrl(selectedUpdate.img_2_pth)}
                           alt="Update Image 2"
-                          className="w-full h-auto rounded-lg border border-gray-200"
+                          className="w-full h-full object-cover"
+                          crossOrigin="anonymous"
                           onError={(e) => {
-                            console.error('Error loading image 2:', selectedUpdate.img_2_pth);
+                            console.error('❌ Error loading image 2:', {
+                              path: selectedUpdate.img_2_pth,
+                              url: getImageUrl(selectedUpdate.img_2_pth),
+                              baseUrl: baseApiService.apiUrl
+                            });
                             e.target.style.display = 'none';
+                            e.target.parentElement.innerHTML = '<div class="flex items-center justify-center h-full text-gray-400">Image not found</div>';
+                          }}
+                          onLoad={() => {
+                            console.log('✅ Successfully loaded image 2:', getImageUrl(selectedUpdate.img_2_pth));
                           }}
                         />
                       </div>
                     )}
-                    {selectedUpdate.img_3_pth && (
-                      <div>
+                    {selectedUpdate.img_3_pth && selectedUpdate.img_3_pth.trim() !== '' && (
+                      <div className="relative bg-gray-100 rounded-lg border-2 border-gray-300 overflow-hidden aspect-square flex items-center justify-center">
                         <img 
                           src={getImageUrl(selectedUpdate.img_3_pth)}
                           alt="Update Image 3"
-                          className="w-full h-auto rounded-lg border border-gray-200"
+                          className="w-full h-full object-cover"
+                          crossOrigin="anonymous"
                           onError={(e) => {
-                            console.error('Error loading image 3:', selectedUpdate.img_3_pth);
+                            console.error('❌ Error loading image 3:', {
+                              path: selectedUpdate.img_3_pth,
+                              url: getImageUrl(selectedUpdate.img_3_pth),
+                              baseUrl: baseApiService.apiUrl
+                            });
                             e.target.style.display = 'none';
+                            e.target.parentElement.innerHTML = '<div class="flex items-center justify-center h-full text-gray-400">Image not found</div>';
+                          }}
+                          onLoad={() => {
+                            console.log('✅ Successfully loaded image 3:', getImageUrl(selectedUpdate.img_3_pth));
                           }}
                         />
                       </div>
@@ -1006,6 +1078,7 @@ const SAFUpdates = () => {
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
+                  {/* Image 1 */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Image 1 <span className="text-red-600">*</span>
@@ -1013,35 +1086,73 @@ const SAFUpdates = () => {
                     <input
                       type="file"
                       accept="image/*"
+                      data-image="1"
+                      id="image-input-1"
                       onChange={(e) => handleImageChange(e, 1)}
-                      className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-saf-red-500 focus:border-saf-red-500 transition-all"
+                      className="hidden"
                     />
-                    {formData.img_1_pth && !formData.img_1 && (
-                      <div className="mt-2">
-                        <p className="text-xs text-gray-600 mb-1">Current Image:</p>
-                        <img 
-                          src={getImageUrl(formData.img_1_pth)}
-                          alt="Current Image 1" 
-                          className="w-full h-32 object-contain rounded-lg border border-gray-200 bg-gray-50" 
-                          onError={(e) => {
-                            console.error('Error loading current image 1:', formData.img_1_pth);
-                            e.target.style.display = 'none';
-                          }}
-                        />
-                      </div>
-                    )}
-                    {formData.img_1 && (
-                      <div className="mt-2">
-                        <p className="text-xs text-gray-600 mb-1">New Image Preview:</p>
-                        <img 
-                          src={URL.createObjectURL(formData.img_1)}
-                          alt="New Image 1 Preview" 
-                          className="w-full h-32 object-contain rounded-lg border border-gray-200 bg-gray-50"
-                        />
-                      </div>
-                    )}
+                    <div
+                      onClick={() => document.getElementById('image-input-1')?.click()}
+                      className="relative bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 overflow-hidden aspect-square flex items-center justify-center cursor-pointer hover:border-saf-red-500 hover:bg-gray-50 transition-all group"
+                    >
+                      {(formData.img_1_pth && formData.img_1_pth.trim() !== '' && !formData.img_1) ? (
+                        <>
+                          <img 
+                            src={getImageUrl(formData.img_1_pth)}
+                            alt="Image 1" 
+                            className="w-full h-full object-cover"
+                            crossOrigin="anonymous"
+                            onError={(e) => {
+                              console.error('❌ Error loading image 1:', {
+                                path: formData.img_1_pth,
+                                url: getImageUrl(formData.img_1_pth),
+                                baseUrl: baseApiService.apiUrl
+                              });
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteImage(1);
+                            }}
+                            className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-700 z-10"
+                            title="Delete Image 1"
+                          >
+                            <XCircle size={20} />
+                          </button>
+                        </>
+                      ) : formData.img_1 ? (
+                        <>
+                          <img 
+                            src={URL.createObjectURL(formData.img_1)}
+                            alt="Image 1 Preview" 
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteImage(1);
+                            }}
+                            className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-700 z-10"
+                            title="Delete Image 1"
+                          >
+                            <XCircle size={20} />
+                          </button>
+                        </>
+                      ) : (
+                        <div className="text-center p-4">
+                          <Plus className="mx-auto h-12 w-12 text-gray-400 mb-2" />
+                          <p className="text-sm text-gray-500 font-medium">Click to upload</p>
+                          <p className="text-xs text-gray-400 mt-1">Image 1</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
+                  {/* Image 2 */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Image 2 <span className="text-red-600">*</span>
@@ -1049,35 +1160,73 @@ const SAFUpdates = () => {
                     <input
                       type="file"
                       accept="image/*"
+                      data-image="2"
+                      id="image-input-2"
                       onChange={(e) => handleImageChange(e, 2)}
-                      className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-saf-red-500 focus:border-saf-red-500 transition-all"
+                      className="hidden"
                     />
-                    {formData.img_2_pth && !formData.img_2 && (
-                      <div className="mt-2">
-                        <p className="text-xs text-gray-600 mb-1">Current Image:</p>
-                        <img 
-                          src={getImageUrl(formData.img_2_pth)}
-                          alt="Current Image 2" 
-                          className="w-full h-32 object-contain rounded-lg border border-gray-200 bg-gray-50"
-                          onError={(e) => {
-                            console.error('Error loading current image 2:', formData.img_2_pth);
-                            e.target.style.display = 'none';
-                          }}
-                        />
-                      </div>
-                    )}
-                    {formData.img_2 && (
-                      <div className="mt-2">
-                        <p className="text-xs text-gray-600 mb-1">New Image Preview:</p>
-                        <img 
-                          src={URL.createObjectURL(formData.img_2)}
-                          alt="New Image 2 Preview" 
-                          className="w-full h-32 object-contain rounded-lg border border-gray-200 bg-gray-50"
-                        />
-                      </div>
-                    )}
+                    <div
+                      onClick={() => document.getElementById('image-input-2')?.click()}
+                      className="relative bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 overflow-hidden aspect-square flex items-center justify-center cursor-pointer hover:border-saf-red-500 hover:bg-gray-50 transition-all group"
+                    >
+                      {(formData.img_2_pth && formData.img_2_pth.trim() !== '' && !formData.img_2) ? (
+                        <>
+                          <img 
+                            src={getImageUrl(formData.img_2_pth)}
+                            alt="Image 2" 
+                            className="w-full h-full object-cover"
+                            crossOrigin="anonymous"
+                            onError={(e) => {
+                              console.error('❌ Error loading image 2:', {
+                                path: formData.img_2_pth,
+                                url: getImageUrl(formData.img_2_pth),
+                                baseUrl: baseApiService.apiUrl
+                              });
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteImage(2);
+                            }}
+                            className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-700 z-10"
+                            title="Delete Image 2"
+                          >
+                            <XCircle size={20} />
+                          </button>
+                        </>
+                      ) : formData.img_2 ? (
+                        <>
+                          <img 
+                            src={URL.createObjectURL(formData.img_2)}
+                            alt="Image 2 Preview" 
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteImage(2);
+                            }}
+                            className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-700 z-10"
+                            title="Delete Image 2"
+                          >
+                            <XCircle size={20} />
+                          </button>
+                        </>
+                      ) : (
+                        <div className="text-center p-4">
+                          <Plus className="mx-auto h-12 w-12 text-gray-400 mb-2" />
+                          <p className="text-sm text-gray-500 font-medium">Click to upload</p>
+                          <p className="text-xs text-gray-400 mt-1">Image 2</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
+                  {/* Image 3 */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Image 3 <span className="text-red-600">*</span>
@@ -1085,33 +1234,70 @@ const SAFUpdates = () => {
                     <input
                       type="file"
                       accept="image/*"
+                      data-image="3"
+                      id="image-input-3"
                       onChange={(e) => handleImageChange(e, 3)}
-                      className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-saf-red-500 focus:border-saf-red-500 transition-all"
+                      className="hidden"
                     />
-                    {formData.img_3_pth && !formData.img_3 && (
-                      <div className="mt-2">
-                        <p className="text-xs text-gray-600 mb-1">Current Image:</p>
-                        <img 
-                          src={getImageUrl(formData.img_3_pth)}
-                          alt="Current Image 3" 
-                          className="w-full h-32 object-contain rounded-lg border border-gray-200 bg-gray-50"
-                          onError={(e) => {
-                            console.error('Error loading current image 3:', formData.img_3_pth);
-                            e.target.style.display = 'none';
-                          }}
-                        />
-                      </div>
-                    )}
-                    {formData.img_3 && (
-                      <div className="mt-2">
-                        <p className="text-xs text-gray-600 mb-1">New Image Preview:</p>
-                        <img 
-                          src={URL.createObjectURL(formData.img_3)}
-                          alt="New Image 3 Preview" 
-                          className="w-full h-32 object-contain rounded-lg border border-gray-200 bg-gray-50"
-                        />
-                      </div>
-                    )}
+                    <div
+                      onClick={() => document.getElementById('image-input-3')?.click()}
+                      className="relative bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 overflow-hidden aspect-square flex items-center justify-center cursor-pointer hover:border-saf-red-500 hover:bg-gray-50 transition-all group"
+                    >
+                      {(formData.img_3_pth && formData.img_3_pth.trim() !== '' && !formData.img_3) ? (
+                        <>
+                          <img 
+                            src={getImageUrl(formData.img_3_pth)}
+                            alt="Image 3" 
+                            className="w-full h-full object-cover"
+                            crossOrigin="anonymous"
+                            onError={(e) => {
+                              console.error('❌ Error loading image 3:', {
+                                path: formData.img_3_pth,
+                                url: getImageUrl(formData.img_3_pth),
+                                baseUrl: baseApiService.apiUrl
+                              });
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteImage(3);
+                            }}
+                            className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-700 z-10"
+                            title="Delete Image 3"
+                          >
+                            <XCircle size={20} />
+                          </button>
+                        </>
+                      ) : formData.img_3 ? (
+                        <>
+                          <img 
+                            src={URL.createObjectURL(formData.img_3)}
+                            alt="Image 3 Preview" 
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteImage(3);
+                            }}
+                            className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-700 z-10"
+                            title="Delete Image 3"
+                          >
+                            <XCircle size={20} />
+                          </button>
+                        </>
+                      ) : (
+                        <div className="text-center p-4">
+                          <Plus className="mx-auto h-12 w-12 text-gray-400 mb-2" />
+                          <p className="text-sm text-gray-500 font-medium">Click to upload</p>
+                          <p className="text-xs text-gray-400 mt-1">Image 3</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 

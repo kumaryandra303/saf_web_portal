@@ -7,77 +7,77 @@ const HeroSection = () => {
   const { t } = useLanguage()
   
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-saf-red-500 via-saf-red-600 to-saf-red-700">
+    <section className="relative min-h-[90vh] sm:min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-saf-red-500 via-saf-red-600 to-saf-red-700">
       {/* Animated Background Pattern */}
       <div className="absolute inset-0 pattern-overlay opacity-20"></div>
       
       {/* Floating Elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-white/5 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-saf-gold-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-20 left-10 w-72 h-72 bg-white/5 rounded-full blur-3xl animate-pulse hidden sm:block"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-saf-gold-500/10 rounded-full blur-3xl animate-pulse delay-1000 hidden sm:block"></div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 w-full">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left Content */}
-          <div className="text-white space-y-8 animate-fade-in-up">
+          <div className="text-white space-y-6 sm:space-y-8 animate-fade-in-up w-full">
             {/* Badge */}
-            <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
-              <Shield className="w-5 h-5 text-saf-gold-400" />
-              <span className="text-sm font-medium">{t('home.heroSubtitle')}</span>
+            <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-sm px-3 sm:px-4 py-2 rounded-full border border-white/20">
+              <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-saf-gold-400 flex-shrink-0" />
+              <span className="text-xs sm:text-sm font-medium">{t('home.heroSubtitle')}</span>
             </div>
 
             {/* Main Heading */}
-            <div className="space-y-4">
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
+            <div className="space-y-3 sm:space-y-4">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight break-words">
                 {t('home.heroTitle')}
               </h1>
-              <div className="h-1 w-24 bg-saf-gold-400 rounded-full"></div>
+              <div className="h-1 w-20 sm:w-24 bg-saf-gold-400 rounded-full"></div>
             </div>
 
             {/* Subtitle */}
-            <p className="text-xl md:text-2xl text-gray-100 leading-relaxed max-w-2xl">
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-100 leading-relaxed max-w-2xl">
               {t('home.heroSubtitle')}
             </p>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-6 py-6">
+            <div className="grid grid-cols-3 gap-3 sm:gap-4 md:gap-6 py-4 sm:py-6">
               <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-white">₹1Cr+</div>
-                <div className="text-sm text-gray-200 mt-1">{t('home.corpusFund')}</div>
+                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white break-words">₹1Cr+</div>
+                <div className="text-xs sm:text-sm text-gray-200 mt-1 break-words">{t('home.corpusFund')}</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-white">1000+</div>
-                <div className="text-sm text-gray-200 mt-1">{t('home.familiesSupported')}</div>
+                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white">1000+</div>
+                <div className="text-xs sm:text-sm text-gray-200 mt-1 break-words">{t('home.familiesSupported')}</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-white">50+</div>
-                <div className="text-sm text-gray-200 mt-1">{t('home.programsActive')}</div>
+                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white">50+</div>
+                <div className="text-xs sm:text-sm text-gray-200 mt-1 break-words">{t('home.programsActive')}</div>
               </div>
             </div>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Link
                 to="/about"
-                className="group inline-flex items-center justify-center px-8 py-4 bg-white text-saf-red-600 font-semibold rounded-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+                className="group inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-white text-saf-red-600 font-semibold rounded-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-sm sm:text-base"
               >
                 {t('home.aboutSAF')}
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link
                 to="/contact?tab=membership"
-                className="group inline-flex items-center justify-center px-8 py-4 bg-transparent text-white font-semibold rounded-lg border-2 border-white hover:bg-white hover:text-saf-red-600 transition-all duration-300"
+                className="group inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-transparent text-white font-semibold rounded-lg border-2 border-white hover:bg-white hover:text-saf-red-600 transition-all duration-300 text-sm sm:text-base"
               >
                 {t('home.joinMission')}
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
 
             {/* Social Proof */}
-            <div className="pt-8 border-t border-white/20">
-              <p className="text-sm text-gray-200 mb-3">{t('home.patronage')}</p>
-              <p className="text-lg font-semibold text-white">{t('home.minister')}</p>
+            <div className="pt-6 sm:pt-8 border-t border-white/20">
+              <p className="text-xs sm:text-sm text-gray-200 mb-2 sm:mb-3">{t('home.patronage')}</p>
+              <p className="text-base sm:text-lg font-semibold text-white break-words">{t('home.minister')}</p>
             </div>
           </div>
 
@@ -122,7 +122,7 @@ const HeroSection = () => {
       </div>
 
       {/* Scroll Indicator */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+      <div className="absolute bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce hidden sm:block">
         <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
           <div className="w-1 h-3 bg-white/50 rounded-full mt-2"></div>
         </div>

@@ -6,21 +6,14 @@ import safService from '../services/safService'
 const Updates = () => {
   const { t, language } = useLanguage()
   const [updates, setUpdates] = useState([])
+  const [rawUpdates, setRawUpdates] = useState([]) // Store raw API data
   const [loading, setLoading] = useState(true)
   const [selectedUpdate, setSelectedUpdate] = useState(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
-  useEffect(() => {
-    fetchUpdates()
-  }, [])
-
-  const fetchUpdates = async () => {
-    setLoading(true)
-    try {
-      const response = await safService.getUpdatesList()
-      if (response && response.status === 200 && response.data) {
-        // Map API data to component format
-        const mappedUpdates = response.data.map(update => {
+  // Map raw updates to display format based on current language
+  const mapUpdatesToDisplay = (rawData) => {
+    return rawData.map(update => {
           // Get icon and color based on type
           let icon = Bell
           let color = 'bg-red-500'
@@ -52,34 +45,191 @@ const Updates = () => {
           })
 
           // Get API base URL for images
-          const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://settibalijaactionforce.com';
+          const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4901';
           const getImageUrl = (imgPath) => {
-            if (!imgPath) return '/assets/saf_update_img1.jpeg';
-            if (imgPath.startsWith('http')) return imgPath;
-            return `${API_BASE_URL}${imgPath}`;
+            if (!imgPath || typeof imgPath !== 'string') return null;
+            const trimmedPath = imgPath.trim();
+            if (trimmedPath === '' || trimmedPath === 'null' || trimmedPath === 'undefined') return null;
+            if (trimmedPath.startsWith('http://') || trimmedPath.startsWith('https://')) return trimmedPath;
+            // If path starts with /docs, use it directly with API_BASE_URL
+            if (trimmedPath.startsWith('/docs/')) {
+              return `${API_BASE_URL}${trimmedPath}`;
+            }
+            // If it's just a filename, prepend the full path
+            return `${API_BASE_URL}/docs/updates/${trimmedPath}`;
           };
 
-          // Filter out default placeholder images
-          const allImages = [
-            update.img_1_pth ? getImageUrl(update.img_1_pth) : null,
-            update.img_2_pth ? getImageUrl(update.img_2_pth) : null,
-            update.img_3_pth ? getImageUrl(update.img_3_pth) : null
-          ].filter(img => img !== null && !img.includes('/assets/saf_update_img1.jpeg'))
+          // Get all valid images from API response
+          // Use the exact field names from API: img_1_pth, img_2_pth, img_3_pth
+          const imgPaths = [
+            update.img_1_pth,
+            update.img_2_pth,
+            update.img_3_pth
+          ];
+          
+          console.log('🖼️ Processing images for update ID:', update.saf_updt_id, {
+            'Raw img_1_pth': update.img_1_pth,
+            'Raw img_2_pth': update.img_2_pth,
+            'Raw img_3_pth': update.img_3_pth,
+            'img_1_pth type': typeof update.img_1_pth,
+            'img_1_pth truthy': !!update.img_1_pth,
+            'All update keys': Object.keys(update)
+          });
+          
+          // Process each image path
+          const allImages = imgPaths
+            .map((imgPath, index) => {
+              if (!imgPath) {
+                console.log(`  Image ${index + 1}: null/undefined`);
+                return null;
+              }
+              
+              const pathType = typeof imgPath;
+              if (pathType !== 'string') {
+                console.log(`  Image ${index + 1}: not a string (${pathType})`, imgPath);
+                return null;
+              }
+              
+              const trimmed = imgPath.trim();
+              if (trimmed === '' || trimmed === 'null' || trimmed === 'undefined') {
+                console.log(`  Image ${index + 1}: empty or invalid string`);
+                return null;
+              }
+              
+              const url = getImageUrl(trimmed);
+              console.log(`  ✅ Image ${index + 1}: "${trimmed}" → "${url}"`);
+              return url;
+            })
+            .filter(url => url !== null);
 
-          return {
-            type: t(`transparency.${update.updt_typ_cd}`) || update.updt_typ_cd,
-            icon: icon,
-            title: language === 'te' ? update.updt_ttl_te : update.updt_ttl_en,
-            date: formattedDate,
-            description: language === 'te' ? update.updt_cntnt_te : update.updt_cntnt_en,
-            color: color,
-            image: allImages.length > 0 ? allImages[0] : '/assets/saf_update_img1.jpeg',
-            images: allImages.length > 0 ? allImages : ['/assets/saf_update_img1.jpeg']
+          // Debug logging
+          console.log(`📊 Update ${update.saf_updt_id} - Found ${allImages.length} valid images:`, allImages);
+          
+          if (allImages.length === 0) {
+            console.warn(`⚠️ No valid images for update ${update.saf_updt_id}`);
           }
-        })
+
+      const mappedUpdate = {
+        ...update, // Keep all original fields for reference (including img_1_pth, img_2_pth, img_3_pth)
+        type: t(`transparency.${update.updt_typ_cd}`) || update.updt_typ_cd,
+        icon: icon,
+        title: language === 'te' ? (update.updt_ttl_te || update.updt_ttl_en) : (update.updt_ttl_en || update.updt_ttl_te),
+        date: formattedDate,
+        description: language === 'te' ? (update.updt_cntnt_te || update.updt_cntnt_en) : (update.updt_cntnt_en || update.updt_cntnt_te),
+        color: color,
+        image: allImages.length > 0 ? allImages[0] : null,
+        images: allImages.length > 0 ? allImages : []
+      };
+      
+      // Final verification
+      if (allImages.length > 0) {
+        console.log(`✅ Mapped update ${update.saf_updt_id}:`, {
+          'image property': mappedUpdate.image,
+          'images array length': mappedUpdate.images.length,
+          'first image URL': mappedUpdate.images[0]
+        });
+      }
+      
+      return mappedUpdate;
+    })
+  }
+
+  useEffect(() => {
+    fetchUpdates()
+  }, [])
+
+  // Re-map updates when language changes
+  useEffect(() => {
+    if (rawUpdates.length > 0) {
+      const remappedUpdates = mapUpdatesToDisplay(rawUpdates)
+      setUpdates(remappedUpdates)
+      
+      // Update selected update if one is selected
+      if (selectedUpdate) {
+        const updatedSelected = remappedUpdates.find(u => u.saf_updt_id === selectedUpdate.saf_updt_id)
+        if (updatedSelected) {
+          setSelectedUpdate(updatedSelected)
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language, rawUpdates])
+
+  const fetchUpdates = async () => {
+    setLoading(true)
+    try {
+      const response = await safService.getUpdatesList()
+      
+      console.log('🔍 Raw API Response:', JSON.stringify(response, null, 2));
+      console.log('🔍 Response Type:', typeof response);
+      console.log('🔍 Is Array:', Array.isArray(response));
+      if (response && typeof response === 'object') {
+        console.log('🔍 Response Keys:', Object.keys(response));
+      }
+      
+      // Handle different response structures
+      // baseApiService.get() returns response.data from axios
+      // The API likely returns {status: 200, data: [...]} format
+      let updatesData = []
+      
+      // Try all possible structures
+      if (Array.isArray(response)) {
+        // Direct array
+        updatesData = response
+        console.log('✅ Using direct array response, count:', updatesData.length);
+      } else if (response && response.status === 200 && Array.isArray(response.data)) {
+        // {status: 200, data: [...]}
+        updatesData = response.data
+        console.log('✅ Using response.data (status 200), count:', updatesData.length);
+      } else if (response && Array.isArray(response.data)) {
+        // {data: [...]}
+        updatesData = response.data
+        console.log('✅ Using response.data, count:', updatesData.length);
+      } else if (response && response.data && Array.isArray(response.data.data)) {
+        // {data: {data: [...]}}
+        updatesData = response.data.data
+        console.log('✅ Using response.data.data, count:', updatesData.length);
+      } else {
+        console.error('❌ Could not extract updates array from response');
+        console.error('Response structure:', response);
+        updatesData = []
+      }
+      
+      // Log first update to see structure and images
+      if (updatesData.length > 0) {
+        const firstUpdate = updatesData[0];
+        console.log('📋 First Update (Full):', JSON.stringify(firstUpdate, null, 2));
+        console.log('📋 First Update Images Check:', {
+          'has img_1_pth': !!firstUpdate.img_1_pth,
+          'img_1_pth value': firstUpdate.img_1_pth,
+          'img_1_pth type': typeof firstUpdate.img_1_pth,
+          'has img_2_pth': !!firstUpdate.img_2_pth,
+          'img_2_pth value': firstUpdate.img_2_pth,
+          'has img_3_pth': !!firstUpdate.img_3_pth,
+          'img_3_pth value': firstUpdate.img_3_pth,
+          'all keys': Object.keys(firstUpdate)
+        });
+      } else {
+        console.warn('⚠️ No updates data found in response');
+      }
+      
+      if (updatesData.length > 0) {
+        // Store raw data (preserve original structure)
+        setRawUpdates(updatesData)
+        // Map to display format
+        const mappedUpdates = mapUpdatesToDisplay(updatesData)
+        console.log('📸 Mapped Updates Summary:', mappedUpdates.map(u => ({
+          saf_updt_id: u.saf_updt_id,
+          title: u.title,
+          image: u.image,
+          imagesCount: u.images ? u.images.length : 0,
+          'has images': u.images && u.images.length > 0
+        })));
         setUpdates(mappedUpdates)
       } else {
+        console.warn('⚠️ Setting empty updates array');
         setUpdates([])
+        setRawUpdates([])
       }
     } catch (error) {
       console.error('Error fetching updates:', error)
@@ -151,14 +301,31 @@ const Updates = () => {
                 >
                   <div className="grid md:grid-cols-3 gap-6">
                     <div className="md:col-span-1">
-                      <img 
-                        src={update.image} 
-                        alt={update.title}
-                        className="w-full h-full object-cover min-h-[200px]"
-                        onError={(e) => {
-                          e.target.src = '/assets/saf_update_img1.jpeg'
-                        }}
-                      />
+                      {update.image ? (
+                        <img 
+                          src={update.image} 
+                          alt={update.title}
+                          className="w-full h-full object-cover min-h-[200px]"
+                          crossOrigin="anonymous"
+                          onError={(e) => {
+                            console.error('❌ Error loading image:', {
+                              'update.image': update.image,
+                              'update.images[0]': update.images?.[0],
+                              'update.img_1_pth': update.img_1_pth,
+                              'update.saf_updt_id': update.saf_updt_id,
+                              'attempted src': e.target.src
+                            });
+                            e.target.style.display = 'none';
+                          }}
+                          onLoad={(e) => {
+                            console.log('✅ Successfully loaded image:', e.target.src, 'for update:', update.saf_updt_id);
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full min-h-[200px] bg-gray-200 flex items-center justify-center">
+                          <FileText className="w-12 h-12 text-gray-400" />
+                        </div>
+                      )}
                     </div>
                     <div className="md:col-span-2 p-6">
                       <div className="flex items-center space-x-4 mb-4">
@@ -256,8 +423,10 @@ const Updates = () => {
                       src={selectedUpdate.images[currentImageIndex] || selectedUpdate.images[0]} 
                       alt={selectedUpdate.title}
                       className="w-full h-auto rounded-lg object-cover max-h-[500px]"
+                      crossOrigin="anonymous"
                       onError={(e) => {
-                        e.target.src = '/assets/saf_update_img1.jpeg'
+                        console.error('❌ Error loading modal image:', e.target.src);
+                        e.target.style.display = 'none';
                       }}
                     />
                     
@@ -326,8 +495,10 @@ const Updates = () => {
                             src={img} 
                             alt={`${selectedUpdate.title} - Image ${index + 1}`}
                             className="w-full h-full object-cover"
+                            crossOrigin="anonymous"
                             onError={(e) => {
-                              e.target.src = '/assets/saf_update_img1.jpeg'
+                              console.error('❌ Error loading thumbnail:', e.target.src);
+                              e.target.style.display = 'none';
                             }}
                           />
                         </button>

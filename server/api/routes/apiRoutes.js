@@ -30,6 +30,9 @@ router.use('/keypeople', require(appRoot + '/server/api/routes/keypeople/keypeop
 // Funds routes
 router.use('/funds', require(appRoot + '/server/api/routes/funds/fundsRtr'));
 
+// Reports routes
+router.use('/reports', require(appRoot + '/server/api/routes/reports/reportsRtr'));
+
 // Catch all invalid routes
 router.all('*', (req, res) => {
     res.status(std.message["INVALID_ROUTE"].code).send({ 

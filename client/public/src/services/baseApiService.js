@@ -16,6 +16,11 @@ const axiosInstance = axios.create({
 // Request interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
+    // If data is FormData, let browser set Content-Type (multipart/form-data)
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+    
     console.log('API Request:', config.url, config.data);
     return config;
   },

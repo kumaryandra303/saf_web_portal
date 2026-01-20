@@ -10,7 +10,7 @@ import CTASection from '../components/home/CTASection'
 
 const Home = () => {
   return (
-    <div className="pt-16">
+    <div className="pt-16 sm:pt-20 overflow-x-hidden">
       <HeroSection />
       <MissionHighlights />
       <AboutPreview />

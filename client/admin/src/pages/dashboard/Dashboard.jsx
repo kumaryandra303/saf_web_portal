@@ -5,6 +5,7 @@ import DashboardHome from './DashboardHome';
 import SAFMembers from './SAFMembers';
 import SAFUpdates from './SAFUpdates';
 import SAFDonations from './SAFDonations';
+import Reports from './Reports';
 
 const Dashboard = () => {
   return (
@@ -14,6 +15,7 @@ const Dashboard = () => {
         <Route path="/members" element={<SAFMembers />} />
         <Route path="/updates" element={<SAFUpdates />} />
         <Route path="/donations" element={<SAFDonations />} />
+        <Route path="/reports" element={<Reports />} />
       </Routes>
     </DashboardLayout>
   );

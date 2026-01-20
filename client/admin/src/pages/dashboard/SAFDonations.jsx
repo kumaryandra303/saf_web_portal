@@ -10,11 +10,10 @@ import DataGrid, {
   Selection,
   ColumnChooser
 } from 'devextreme-react/data-grid';
-import { DollarSign, Plus, X, Filter, RefreshCw, Eye, Edit, Trash2, Calendar, FileSpreadsheet } from 'lucide-react';
+import { DollarSign, Plus, X, Filter, RefreshCw, Eye, Edit, Trash2, Calendar, FileSpreadsheet, XCircle } from 'lucide-react';
 import 'devextreme/dist/css/dx.light.css';
 import './SAFDonations.css';
 import baseApiService from '../../services/baseApiService';
-import axios from 'axios';
 
 const SAFDonations = () => {
   const [donations, setDonations] = useState([]);
@@ -71,6 +70,26 @@ const SAFDonations = () => {
     { value: 'completed', label: 'Completed' },
     { value: 'failed', label: 'Failed' }
   ];
+
+  // Helper function to get image URL
+  const getImageUrl = (imagePath) => {
+    if (!imagePath || typeof imagePath !== 'string' || imagePath.trim() === '') {
+      return null;
+    }
+    
+    // If already a full URL, return as-is
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+    
+    // If path starts with /docs, use it directly
+    if (imagePath.startsWith('/docs/')) {
+      return `${baseApiService.apiUrl}${imagePath}`;
+    }
+    
+    // If it's just a filename, prepend the full path
+    return `${baseApiService.apiUrl}/docs/funds/${imagePath}`;
+  };
 
   useEffect(() => {
     try {
@@ -240,7 +259,12 @@ const SAFDonations = () => {
     try {
       const response = await baseApiService.get(`/funds/${donationId}`);
       if (response && response.status === 200) {
-        setSelectedDonation(response.data);
+        const donation = response.data;
+        // Store raw image path from API (will be processed in render)
+        setSelectedDonation({
+          ...donation,
+          rcpt_img_pth: (donation.rcpt_img_pth && typeof donation.rcpt_img_pth === 'string') ? donation.rcpt_img_pth.trim() : null
+        });
         setViewSidebarOpen(true);
       }
     } catch (error) {
@@ -272,7 +296,7 @@ const SAFDonations = () => {
           mandal_id: donation.mndl_id || '',
           description: donation.fund_dscrptn_tx || '',
           receipt_image: null,
-          receipt_image_path: donation.rcpt_img_pth || '',
+          receipt_image_path: (donation.rcpt_img_pth && typeof donation.rcpt_img_pth === 'string') ? donation.rcpt_img_pth.trim() : '',
           payment_date: donation.pymnt_dt || ''
         });
         setIsEditMode(true);
@@ -327,8 +351,22 @@ const SAFDonations = () => {
     if (file) {
       setFormData(prev => ({
         ...prev,
-        receipt_image: file
+        receipt_image: file,
+        receipt_image_path: '' // Clear existing path when new file is selected
       }));
+    }
+  };
+
+  const handleDeleteImage = () => {
+    setFormData(prev => ({
+      ...prev,
+      receipt_image: null,
+      receipt_image_path: ''
+    }));
+    // Reset the file input
+    const fileInput = document.getElementById('receipt-image-input');
+    if (fileInput) {
+      fileInput.value = '';
     }
   };
 
@@ -358,10 +396,6 @@ const SAFDonations = () => {
     }
 
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://settibalijaactionforce.com';
-      const API_PREFIX = '/apiv1';
-      const token = localStorage.getItem('saf_admin_token');
-
       const formDataToSend = new FormData();
       formDataToSend.append('donor_name', formData.donor_name);
       formDataToSend.append('donor_phone', formData.donor_phone || '');
@@ -388,21 +422,17 @@ const SAFDonations = () => {
         formDataToSend.append('receipt_image', formData.receipt_image);
       }
 
-      const url = isEditMode 
-        ? `${API_BASE_URL}${API_PREFIX}/funds/${selectedDonation.saf_fund_id}`
-        : `${API_BASE_URL}${API_PREFIX}/funds/create`;
+      // Use baseApiService for FormData (it handles FormData automatically)
+      const route = isEditMode 
+        ? `/funds/${selectedDonation.saf_fund_id}`
+        : '/funds/create';
 
-      const response = await axios({
-        method: isEditMode ? 'put' : 'post',
-        url: url,
-        data: formDataToSend,
-        headers: {
-          'x-access-token': token
-        }
-      });
+      const response = isEditMode
+        ? await baseApiService.put(route, formDataToSend)
+        : await baseApiService.post(route, formDataToSend);
 
       // Check for HTTP status 200
-      if (response && response.status === 200) {
+      if (response && (response.status === 200 || response.data?.status === 200)) {
         const successMsg = isEditMode ? 'Donation updated successfully!' : 'Donation added successfully!';
         
         // Close sidebar immediately
@@ -422,14 +452,14 @@ const SAFDonations = () => {
       } else {
         setSubmitStatus({
           type: 'error',
-          message: response.data?.message || 'Failed to save donation'
+          message: response?.err_message || response?.message || 'Failed to save donation'
         });
       }
     } catch (error) {
       console.error('Error submitting donation:', error);
       setSubmitStatus({
         type: 'error',
-        message: error.response?.data?.message || 'Failed to save donation. Please try again.'
+        message: error?.err_message || error?.message || 'Failed to save donation. Please try again.'
       });
     } finally {
       setLoading(false);
@@ -972,18 +1002,28 @@ const SAFDonations = () => {
                 </>
               )}
 
-              {selectedDonation.rcpt_img_pth && (
+              {selectedDonation.rcpt_img_pth && selectedDonation.rcpt_img_pth.trim() !== '' && (
                 <>
                   <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl border-l-4 border-saf-red-600">
                     <h3 className="font-bold text-gray-900 mb-1">Receipt Image</h3>
                   </div>
-                  <div>
+                  <div className="relative bg-gray-100 rounded-lg border-2 border-gray-300 overflow-hidden aspect-square flex items-center justify-center">
                     <img 
-                      src={selectedDonation.rcpt_img_pth.startsWith('http') ? selectedDonation.rcpt_img_pth : `/docs/funds/${selectedDonation.rcpt_img_pth}`}
+                      src={getImageUrl(selectedDonation.rcpt_img_pth)}
                       alt="Receipt"
-                      className="w-full h-auto rounded-lg border border-gray-200"
+                      className="w-full h-full object-cover"
+                      crossOrigin="anonymous"
                       onError={(e) => {
+                        console.error('❌ Error loading receipt image:', {
+                          path: selectedDonation.rcpt_img_pth,
+                          url: getImageUrl(selectedDonation.rcpt_img_pth),
+                          baseUrl: baseApiService.apiUrl
+                        });
                         e.target.style.display = 'none';
+                        e.target.parentElement.innerHTML = '<div class="flex items-center justify-center h-full text-gray-400">Image not found</div>';
+                      }}
+                      onLoad={() => {
+                        console.log('✅ Successfully loaded receipt image:', getImageUrl(selectedDonation.rcpt_img_pth));
                       }}
                     />
                   </div>
@@ -1322,32 +1362,69 @@ const SAFDonations = () => {
                   <input
                     type="file"
                     accept="image/*"
+                    id="receipt-image-input"
                     onChange={handleImageChange}
-                    className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-saf-red-500 focus:border-saf-red-500 transition-all"
+                    className="hidden"
                   />
-                  {formData.receipt_image_path && !formData.receipt_image && (
-                    <div className="mt-2">
-                      <p className="text-sm text-gray-600 mb-2">Current Image:</p>
-                      <img 
-                        src={formData.receipt_image_path.startsWith('http') ? formData.receipt_image_path : `/docs/funds/${formData.receipt_image_path}`}
-                        alt="Current receipt"
-                        className="w-full h-auto max-h-48 object-contain rounded-lg border border-gray-200"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
-                  {formData.receipt_image && (
-                    <div className="mt-2">
-                      <p className="text-sm text-gray-600 mb-2">New Image Preview:</p>
-                      <img 
-                        src={URL.createObjectURL(formData.receipt_image)}
-                        alt="Receipt preview"
-                        className="w-full h-auto max-h-48 object-contain rounded-lg border border-gray-200"
-                      />
-                    </div>
-                  )}
+                  <div
+                    onClick={() => document.getElementById('receipt-image-input')?.click()}
+                    className="relative bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 overflow-hidden aspect-square flex items-center justify-center cursor-pointer hover:border-saf-red-500 hover:bg-gray-50 transition-all group max-w-md"
+                  >
+                    {(formData.receipt_image_path && formData.receipt_image_path.trim() !== '' && !formData.receipt_image) ? (
+                      <>
+                        <img 
+                          src={getImageUrl(formData.receipt_image_path)}
+                          alt="Receipt" 
+                          className="w-full h-full object-cover"
+                          crossOrigin="anonymous"
+                          onError={(e) => {
+                            console.error('❌ Error loading receipt image:', {
+                              path: formData.receipt_image_path,
+                              url: getImageUrl(formData.receipt_image_path),
+                              baseUrl: baseApiService.apiUrl
+                            });
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteImage();
+                          }}
+                          className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-700 z-10"
+                          title="Delete Image"
+                        >
+                          <XCircle size={20} />
+                        </button>
+                      </>
+                    ) : formData.receipt_image ? (
+                      <>
+                        <img 
+                          src={URL.createObjectURL(formData.receipt_image)}
+                          alt="Receipt Preview" 
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteImage();
+                          }}
+                          className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-700 z-10"
+                          title="Delete Image"
+                        >
+                          <XCircle size={20} />
+                        </button>
+                      </>
+                    ) : (
+                      <div className="text-center p-4">
+                        <Plus className="mx-auto h-12 w-12 text-gray-400 mb-2" />
+                        <p className="text-sm text-gray-500 font-medium">Click to upload</p>
+                        <p className="text-xs text-gray-400 mt-1">Receipt Image</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex gap-4 pt-4 border-t-2">

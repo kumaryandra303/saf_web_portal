@@ -82,7 +82,8 @@ app.use(helmet.contentSecurityPolicy({
           'https://pbs.twimg.com',
           'https://fonts.googleapis.com/', 'https://settibalijaactionforce.com', 'https://platform.twitter.com',
           'https://syndication.twitter.com', 'https://www.facebook.com', 'https://www.gstatic.com',
-          'https://es-staging.cdac.in','https://www.google.com/', 'https://translate.googleapis.com', 'https://translate.google.com/','https://www.freecounterstat.com/','https://counter5.stat.ovh/'],
+          'https://es-staging.cdac.in','https://www.google.com/', 'https://translate.googleapis.com', 'https://translate.google.com/','https://www.freecounterstat.com/','https://counter5.stat.ovh/',
+          'http://localhost:4901', 'http://localhost:3001', 'http://localhost:3002'],
       
         }
 }));
@@ -101,11 +102,17 @@ app.use(function(req, res, next) {
 });
 app.use(compression());
 
+// CORS allowed domains (defined early for use in static file serving)
+var allowedDomains = [
+    'http://localhost:3000', 
+    'http://localhost:3001',  // SAF Admin Portal
+    'http://localhost:3002',  // SAF Admin Portal
+    'http://localhost:4200',
+    'http://localhost:8100', 
+    'https://settibalijaactionforce.com',
+    'http://settibalijaactionforce.com'
+];
 
-  
-
-
- 
 app.use(express.static(__dirname + '/client/public/dist/enlink', {
     setHeaders(res, path) {
         if (path.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|json)$/)) {
@@ -117,17 +124,7 @@ app.use(express.static(__dirname + '/client/public/dist/enlink', {
     }
 }));
 
-// Serve uploaded documents/images
-app.use('/docs', express.static(__dirname + '/public/docs', {
-    setHeaders(res, path) {
-        if (path.match(/\.(png|jpg|jpeg|gif|svg|webp)$/)) {
-            const date = new Date();
-            date.setFullYear(date.getFullYear() + 1);
-            res.setHeader("Expires", date.toUTCString());
-            res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
-        }
-    }
-}));
+// Note: /docs route handler moved below after audit middleware
 
 // Session configuration
 var sqlstoreOptions = {
@@ -162,18 +159,8 @@ appSettings.app.session_options.cookie.secure = appSettings.app.prod;
 var sessionConnection = expressSession(appSettings.app.session_options)
 app.use(sessionConnection);
 
-// CORS configuration
-var allowedDomains = [
-    'http://localhost:3000', 
-    'http://localhost:3001',  // SAF Admin Portal
-    'http://localhost:4200',
-    'http://localhost:8100', 
-    'https://settibalijaactionforce.com',
-    'https://settibalijaactionforce.com',
-    'http://settibalijaactionforce.com'
 
-];
-
+// CORS configuration (allowedDomains already defined above)
 app.use(cors({
     origin: function (origin, callback) {
         // bypass the requests with no origin (like curl requests, mobile apps, etc)
@@ -258,6 +245,67 @@ app.all('*', function (req, res, next) {
 // API Routes
 app.use('/apiv1', require('./server/api/routes/apiRoutes'));
 app.use('/apiv2', cors(), require('./server/api/routes/apiRoutes'));
+
+// Serve uploaded documents/images with CORS support
+// Handle OPTIONS preflight requests for /docs FIRST (before static middleware)
+app.options('/docs*', function(req, res) {
+    const origin = req.headers.origin;
+    console.log('🔵 OPTIONS request for /docs, Origin:', origin);
+    // Always allow any origin for images (no credentials needed)
+    if (origin) {
+        res.setHeader("Access-Control-Allow-Origin", origin);
+    } else {
+        res.setHeader("Access-Control-Allow-Origin", "*");
+    }
+    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Access-Control-Max-Age", "86400");
+    console.log('✅ OPTIONS CORS headers set, Origin:', origin || '*');
+    res.status(200).end();
+});
+
+// Serve /docs files with explicit CORS headers
+// This middleware MUST run before express.static to set headers correctly
+app.use('/docs', function(req, res, next) {
+    // Set CORS headers for all /docs requests BEFORE serving the file
+    const origin = req.headers.origin;
+    console.log('📸 /docs GET request:', req.path, 'Origin:', origin);
+    
+    // Always allow any origin for images (CORS for images doesn't need credentials)
+    if (origin) {
+        res.setHeader("Access-Control-Allow-Origin", origin);
+    } else {
+        res.setHeader("Access-Control-Allow-Origin", "*");
+    }
+    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    console.log('✅ CORS headers set for /docs, Origin:', origin || '*');
+    
+    next();
+}, express.static(__dirname + '/public/docs', {
+    setHeaders: function(res, filePath, stat) {
+        // Ensure CORS headers are set in setHeaders callback (called by express.static)
+        // This is a backup to ensure headers are set even if middleware didn't run
+        const origin = res.req && res.req.headers ? res.req.headers.origin : null;
+        if (origin) {
+            res.setHeader("Access-Control-Allow-Origin", origin);
+        } else {
+            res.setHeader("Access-Control-Allow-Origin", "*");
+        }
+        res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+        console.log('✅ setHeaders: CORS headers set, Origin:', origin || '*', 'File:', path.basename(filePath));
+        
+        // Set cache headers for images
+        const ext = path.extname(filePath).toLowerCase();
+        if (ext.match(/\.(png|jpg|jpeg|gif|svg|webp)$/)) {
+            const date = new Date();
+            date.setFullYear(date.getFullYear() + 1);
+            res.setHeader("Expires", date.toUTCString());
+            res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        }
+    }
+}));
 
 // Serve client application
 app.get('/', function (req, res) {

@@ -12,3 +12,8 @@ dashboardRtr.get('/district-wise', dashboardCtrl.getDistrictWiseStatsCtrl);
 
 module.exports = dashboardRtr;
 
+
+
+
+
+

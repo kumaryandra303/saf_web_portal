@@ -65,3 +65,8 @@ Once you have the license key, add it to this project:
 3. The orange evaluation banner should NOT appear
 4. If banner still appears, the CSS rules will hide it automatically
 
+
+
+
+
+

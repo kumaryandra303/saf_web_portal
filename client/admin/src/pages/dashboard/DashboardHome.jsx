@@ -294,7 +294,7 @@ const DashboardHome = () => {
                 worksheet.columns = [
                   { header: 'District Name', width: 25 },
                   { header: 'Total Members', width: 15 },
-                  { header: 'Paid Members', width: 15 },
+                  { header: 'Member Paid Amount (₹)', width: 20 },
                   { header: 'Donors Count', width: 15 },
                   { header: 'Total Donations (₹)', width: 20 },
                   { header: 'Avg Donation (₹)', width: 18 }
@@ -313,7 +313,7 @@ const DashboardHome = () => {
                   worksheet.addRow([
                     row.dstrt_nm,
                     row.total_members,
-                    row.paid_members,
+                    parseFloat(row.member_paid_amnt || 0).toFixed(2),
                     row.donors_count,
                     parseFloat(row.total_donations || 0).toFixed(2),
                     parseFloat(row.avg_donation || 0).toFixed(2)
@@ -381,13 +381,17 @@ const DashboardHome = () => {
               alignment="center"
             />
             <Column 
-              dataField="paid_members" 
-              caption="PAID MEMBERS" 
+              dataField="member_paid_amnt" 
+              caption="MEMBER PAID AMOUNT (₹)" 
               dataType="number"
               width="auto"
-              minWidth={140}
+              minWidth={180}
+              format={{ type: 'currency', currency: 'INR', precision: 2 }}
               allowSorting={true}
-              alignment="center"
+              alignment="right"
+              cellRender={(data) => (
+                <span className="font-semibold text-blue-600">{formatCurrency(data.value)}</span>
+              )}
             />
             <Column 
               dataField="donors_count" 
@@ -440,6 +444,15 @@ const DashboardHome = () => {
                 column="total_members"
                 summaryType="sum"
                 displayFormat="Total: {0}"
+              />
+               <TotalItem
+                column="member_paid_amnt"
+                summaryType="sum"
+                displayFormat="Total: {0}"
+                valueFormat={{ type: 'currency', currency: 'INR', precision: 2 }}
+                cellRender={(data) => (
+                  <span className="font-semibold text-blue-600">{formatCurrency(data.value)}</span>
+                )}
               />
               <TotalItem
                 column="total_donations"

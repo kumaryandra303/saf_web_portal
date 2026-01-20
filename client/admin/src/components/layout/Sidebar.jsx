@@ -12,7 +12,8 @@ import {
   Database,
   Shield,
   X,
-  DollarSign
+  DollarSign,
+  FileBarChart
 } from 'lucide-react';
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
@@ -21,6 +22,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     { name: 'SAF Members', icon: Users, path: '/dashboard/members', color: 'text-saf-red-600' },
     { name: 'SAF Updates', icon: FileText, path: '/dashboard/updates', color: 'text-saf-red-600' },
     { name: 'SAF Donations', icon: DollarSign, path: '/dashboard/donations', color: 'text-saf-red-600' },
+    { name: 'Reports', icon: FileBarChart, path: '/dashboard/reports', color: 'text-saf-red-600' },
   ];
 
   return (

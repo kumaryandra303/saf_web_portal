@@ -30,13 +30,13 @@ const AboutPreview = () => {
   ]
 
   return (
-    <section className="py-20 bg-white relative overflow-hidden">
+    <section className="py-12 sm:py-16 lg:py-20 bg-white relative overflow-hidden">
       {/* Background Elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-saf-red-100 rounded-full blur-3xl opacity-30"></div>
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-saf-gold-100 rounded-full blur-3xl opacity-30"></div>
+      <div className="absolute top-0 right-0 w-96 h-96 bg-saf-red-100 rounded-full blur-3xl opacity-30 hidden sm:block"></div>
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-saf-gold-100 rounded-full blur-3xl opacity-30 hidden sm:block"></div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left Content */}
           <div className="space-y-6">
             <div className="inline-flex items-center space-x-2 bg-saf-red-100 px-4 py-2 rounded-full">
@@ -44,18 +44,18 @@ const AboutPreview = () => {
               <span className="text-sm font-semibold text-saf-red-600">{t('nav.about')}</span>
             </div>
 
-            <h2 className="text-4xl md:text-5xl font-bold text-saf-dark-900 leading-tight">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-saf-dark-900 leading-tight">
               {t('about.title')}
             </h2>
 
-            <div className="space-y-4 text-gray-700 leading-relaxed">
-              <p className="text-lg">
+            <div className="space-y-3 sm:space-y-4 text-gray-700 leading-relaxed">
+              <p className="text-base sm:text-lg">
                 {t('about.communityDesc1')}
               </p>
-              <p>
+              <p className="text-sm sm:text-base">
                 {t('about.communityDesc2')}
               </p>
-              <p>
+              <p className="text-sm sm:text-base">
                 {t('about.communityDesc3')}
               </p>
             </div>
@@ -83,29 +83,29 @@ const AboutPreview = () => {
           </div>
 
           {/* Right Content - Timeline */}
-          <div className="relative">
-            <div className="bg-gradient-to-br from-saf-dark-900 to-saf-red-900 rounded-2xl p-8 shadow-2xl">
-              <h3 className="text-2xl font-bold text-white mb-8 flex items-center">
-                <Calendar className="w-6 h-6 mr-3 text-saf-gold-400" />
+          <div className="relative mt-8 lg:mt-0">
+            <div className="bg-gradient-to-br from-saf-dark-900 to-saf-red-900 rounded-2xl p-6 sm:p-8 shadow-2xl">
+              <h3 className="text-xl sm:text-2xl font-bold text-white mb-6 sm:mb-8 flex items-center">
+                <Calendar className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 text-saf-gold-400 flex-shrink-0" />
                 {t('about.ourJourney')}
               </h3>
 
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {timeline.map((item, index) => (
-                  <div key={index} className="relative pl-8 pb-6 last:pb-0">
+                  <div key={index} className="relative pl-6 sm:pl-8 pb-4 sm:pb-6 last:pb-0">
                     {/* Timeline Line */}
                     {index !== timeline.length - 1 && (
-                      <div className="absolute left-2 top-8 bottom-0 w-0.5 bg-saf-gold-400/30"></div>
+                      <div className="absolute left-2 top-6 sm:top-8 bottom-0 w-0.5 bg-saf-gold-400/30"></div>
                     )}
                     
                     {/* Timeline Dot */}
-                    <div className="absolute left-0 top-1 w-4 h-4 bg-saf-gold-400 rounded-full border-4 border-saf-dark-900"></div>
+                    <div className="absolute left-0 top-1 w-3 h-3 sm:w-4 sm:h-4 bg-saf-gold-400 rounded-full border-2 sm:border-4 border-saf-dark-900"></div>
                     
                     {/* Content */}
-                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 hover:bg-white/20 transition-all duration-300">
-                      <div className="text-saf-gold-400 font-bold text-sm mb-1">{item.year}</div>
-                      <h4 className="text-white font-semibold mb-2">{item.title}</h4>
-                      <p className="text-gray-300 text-sm">{item.description}</p>
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4 hover:bg-white/20 transition-all duration-300">
+                      <div className="text-saf-gold-400 font-bold text-xs sm:text-sm mb-1">{item.year}</div>
+                      <h4 className="text-white font-semibold mb-2 text-sm sm:text-base">{item.title}</h4>
+                      <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">{item.description}</p>
                     </div>
                   </div>
                 ))}
@@ -115,14 +115,14 @@ const AboutPreview = () => {
         </div>
 
         {/* Mission Statement */}
-        <div className="mt-16 bg-gradient-to-r from-saf-red-600 to-saf-red-700 rounded-2xl p-8 md:p-12 text-white text-center shadow-2xl">
-          <div className="max-w-4xl mx-auto space-y-4">
-            <h3 className="text-3xl md:text-4xl font-bold">{t('about.whatIsSAF')}</h3>
-            <p className="text-lg md:text-xl text-gray-100 leading-relaxed">
+        <div className="mt-12 sm:mt-16 bg-gradient-to-r from-saf-red-600 to-saf-red-700 rounded-2xl p-6 sm:p-8 md:p-12 text-white text-center shadow-2xl">
+          <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
+            <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold">{t('about.whatIsSAF')}</h3>
+            <p className="text-base sm:text-lg md:text-xl text-gray-100 leading-relaxed">
               {t('about.safDescription')}
             </p>
-            <div className="pt-4">
-              <span className="inline-block bg-white/20 backdrop-blur-sm px-6 py-2 rounded-full text-sm">
+            <div className="pt-3 sm:pt-4">
+              <span className="inline-block bg-white/20 backdrop-blur-sm px-4 sm:px-6 py-2 rounded-full text-xs sm:text-sm">
                 {t('about.patronageOf')}
               </span>
             </div>

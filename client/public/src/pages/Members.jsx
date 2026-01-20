@@ -40,8 +40,21 @@ const Members = () => {
   const fetchDistricts = async () => {
     try {
       const response = await safService.getDistricts()
-      if (response.status === 200 && response.data) {
-        setDistricts(response.data)
+      // baseApiService.get() returns response.data from axios
+      // Handle different response structures
+      let districtsData = []
+      if (Array.isArray(response)) {
+        districtsData = response
+      } else if (response && response.status === 200 && Array.isArray(response.data)) {
+        districtsData = response.data
+      } else if (response && Array.isArray(response.data)) {
+        districtsData = response.data
+      } else if (response && response.data && Array.isArray(response.data.data)) {
+        districtsData = response.data.data
+      }
+      
+      if (districtsData.length > 0) {
+        setDistricts(districtsData)
       }
     } catch (error) {
       console.error('Error fetching districts:', error)
@@ -51,8 +64,23 @@ const Members = () => {
   const fetchMandals = async (districtId) => {
     try {
       const response = await safService.getMandalsByDistrict(districtId)
-      if (response.status === 200 && response.data) {
-        setMandals(response.data)
+      // baseApiService.get() returns response.data from axios
+      // Handle different response structures
+      let mandalsData = []
+      if (Array.isArray(response)) {
+        mandalsData = response
+      } else if (response && response.status === 200 && Array.isArray(response.data)) {
+        mandalsData = response.data
+      } else if (response && Array.isArray(response.data)) {
+        mandalsData = response.data
+      } else if (response && response.data && Array.isArray(response.data.data)) {
+        mandalsData = response.data.data
+      }
+      
+      if (mandalsData.length > 0) {
+        setMandals(mandalsData)
+      } else {
+        setMandals([])
       }
     } catch (error) {
       console.error('Error fetching mandals:', error)
@@ -68,9 +96,20 @@ const Members = () => {
       if (filters.mandal_id) filterParams.mandal_id = filters.mandal_id
 
       const response = await safService.getMembersList(filterParams)
-      if (response.status === 200 && response.data) {
-        setMembers(response.data)
+      // baseApiService.get() returns response.data from axios
+      // Handle different response structures
+      let membersData = []
+      if (Array.isArray(response)) {
+        membersData = response
+      } else if (response && response.status === 200 && Array.isArray(response.data)) {
+        membersData = response.data
+      } else if (response && Array.isArray(response.data)) {
+        membersData = response.data
+      } else if (response && response.data && Array.isArray(response.data.data)) {
+        membersData = response.data.data
       }
+      
+      setMembers(membersData)
     } catch (error) {
       console.error('Error fetching members:', error)
       setMembers([])
@@ -392,6 +431,9 @@ const Members = () => {
 }
 
 export default Members
+
+
+
 
 
 

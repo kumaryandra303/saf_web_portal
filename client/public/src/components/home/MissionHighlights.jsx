@@ -37,8 +37,8 @@ const MissionHighlights = () => {
   ]
 
   return (
-    <section className="py-20 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-12 sm:py-16 lg:py-20 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         {/* Section Header */}
         <div className="text-center mb-16 animate-fade-in-up">
           <div className="inline-flex items-center space-x-2 bg-saf-red-100 px-4 py-2 rounded-full mb-4">
@@ -54,7 +54,7 @@ const MissionHighlights = () => {
         </div>
 
         {/* Mission Cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {missions.map((mission, index) => (
             <div
               key={index}
@@ -95,18 +95,18 @@ const MissionHighlights = () => {
         </div>
 
         {/* Bottom CTA */}
-        <div className="mt-16 text-center">
-          <div className="inline-flex items-center space-x-8 bg-white rounded-2xl shadow-lg p-8">
-            <div className="flex items-center space-x-4">
-              <div className="bg-saf-red-100 p-4 rounded-full">
-                <HeartHandshake className="w-8 h-8 text-saf-red-600" />
+        <div className="mt-12 sm:mt-16 text-center">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6 bg-white rounded-2xl shadow-lg p-6 sm:p-8">
+            <div className="flex items-center space-x-3 sm:space-x-4 flex-shrink-0">
+              <div className="bg-saf-red-100 p-3 sm:p-4 rounded-full flex-shrink-0">
+                <HeartHandshake className="w-6 h-6 sm:w-8 sm:h-8 text-saf-red-600" />
               </div>
               <div className="text-left">
-                <h4 className="text-lg font-bold text-saf-dark-900">{t('mission.wantToContribute')}</h4>
-                <p className="text-sm text-gray-600">{t('mission.joinDifference')}</p>
+                <h4 className="text-base sm:text-lg font-bold text-saf-dark-900">{t('mission.wantToContribute')}</h4>
+                <p className="text-xs sm:text-sm text-gray-600">{t('mission.joinDifference')}</p>
               </div>
             </div>
-            <a href="/contact?tab=membership" className="btn-primary whitespace-nowrap">
+            <a href="/contact?tab=membership" className="btn-primary whitespace-nowrap w-full sm:w-auto text-center">
               {t('mission.getInvolved')}
             </a>
           </div>
